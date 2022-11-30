@@ -17,7 +17,7 @@ def create_receipt():
 
     json_receipt = json.dumps(temp) #print this for unformatted json receipt
     loaded_receipt = json.loads(json_receipt)
-    pretty_receipt = json.dumps(loaded_receipt, indent=2)
+    pretty_receipt = json.dumps(loaded_receipt)#, indent=2)
 
     print(pretty_receipt)
 

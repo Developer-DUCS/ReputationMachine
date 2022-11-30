@@ -11,8 +11,10 @@ import requests
 import configparser
 import db
 import socket
+import json
 
 CONFIG_FILE = "config.ini"
+
 
 # Create database connection
 config = configparser.ConfigParser()
@@ -23,9 +25,10 @@ dbConn = db.DBConnection(config['sqlite']['dbName'])
 app = Quart(__name__)
 
 @app.route("/writeReceipt",methods=['POST'])
-def writeReceipt():
-    receiptData = request.json
-    q = f"INSERT INTO {tableName} (receipt) VALUES (\"{receiptData['receipt']}\");"
+async def writeReceipt():
+    receiptJson = request.body.__dict__['_data'].decode('utf8').replace("'",'"').replace("\r","").replace("\n","")
+    q = f"INSERT INTO {tableName} (receipt) VALUES (\"{json.dumps(receiptJson)}\");"
+    print(q)
     res = dbConn.query(q)
     if res == []:
         return "SAVED"
@@ -48,17 +51,20 @@ def publishReceipt():
         # send a request to each neighbor
         neighborIP = socket.gethostbyname(neighbor[1].split(":")[0])
 
-        # send a request to the neighbor if the incoming request was not from that neighbor
-        neighborRequests = []
-        if neighborIP != reqIP:
-            neighborRequests.append(grequests.post("http://" + neighborIP + "/publishReceipt"))
-        
-        res = grequests.map(neighborRequests)
     return res
 
 @app.route("/verifyReceipt",methods=['POST'])
 def verifyReceipt():
     return -1
 
+@app.route("/receiptHash",methods=["GET"])
+async def verifyHash():
+    return {"hash": "hashVal"}
+
+@app.route("/embedReceipt",methods=["POST"])
+async def embedReceipt():
+    return {"txid":"txid"}
+
+
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0',port=9000) 
