@@ -1,7 +1,7 @@
 const os = require("os");
 const createClient = require('./socket_client');
 
-function initCommands(clientList) {
+function initCommands(manager, websocketServer) {
     process.stdin.setEncoding("utf8");
 
     process.stdin.on("readable", function() {
@@ -22,8 +22,7 @@ function initCommands(clientList) {
             if (cmd == "peer") {
                 console.log("\tConnecting to " + args[1]);
                 try{
-                    let newClient = createClient(args[1]);
-                    clientList.push(newClient);
+                    manager.addClient(args[1]);
                 } catch (error) {
                     console.log("\t"+error);
                     console.error("\x1b[31m%s\x1b[0m", "ERROR: Error connecting to new peer " + args[1]);
@@ -34,12 +33,13 @@ function initCommands(clientList) {
             // Description: shows the host of all websocket client connections
             // Syntax: show clients
             else if (cmd == "show" && args[1] == "clients") {
-                if (clientList.length == 0){
+
+                if (manager.getNumClients() == 0){
                     console.log("\tNO CLIENTS")
                 }
                 else{
-                    clientList.forEach(client => {
-                        console.log("\t"+client.url);
+                    manager.getClients().forEach(client => {
+                        console.log("\t"+client);
                     });
                 }
             }
@@ -51,20 +51,7 @@ function initCommands(clientList) {
             //      <target url> the url of the target to close
             else if (cmd == "close" && args[1] == "client") {
                 let target = args[2];
-                
-                // close client connection with matching URL
-                clientList.forEach(client => {
-                    if(client.url == target){
-                        client.close(1000,"Closed by user");
-                        console.log("\tRemoved client",target,"from client connections");
-                    };
-                });
-
-                // remove clients from list
-                clientList = clientList.filter(function(x) {
-                    return x.url !== target;
-               });
-
+                manager.closeClient(target);
             }
 
             // SEND command 
@@ -88,24 +75,26 @@ function initCommands(clientList) {
                     console.log(msg);
 
                     if (src == "clients") {
-                        clientList.forEach(client => {
-                            console.log("\tSending message to client " + client.url)
+                        console.log("\tSending message from all clients.")
+                        manager.messageClients(msg);
+                    }
+                    else if (src == "server") {
+                        console.log("\tSending message from server to all connected clients.")
+                        websocketServer.clients.forEach(client => {
                             client.send(msg);
                         });
+                    }
+                    else if (src == "all") {
+                        console.log("\tSending message from server to all connected nodes.")
+                        websocketServer.clients.forEach(client => {
+                            client.send(msg);
+                        });
+                        manager.send(msg);
                     }
                 }
                 else {
                     console.error("\x1b[31m%s\x1b[0m", "ERROR: Invalid syntax for SEND command")
                 }
-            }
-
-            // PURGE CLIENTS command
-            // remove all undefinded clients from the list
-            // Syntax: purge clients
-            else if (cmd == "purge" && args[1] == "clients"){
-                clientList = clientList.filter(function(x) {
-                    return x !== undefined;
-               });
             }
 
             // when a command is run, a blank command is detected. Eat that error here
