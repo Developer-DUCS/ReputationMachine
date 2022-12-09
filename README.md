@@ -12,9 +12,9 @@ The config file is an [ini file](https://en.wikipedia.org/wiki/INI_file) with th
 
 ```text
 [Peers]
-DefaultPeers[] = ws://url1.xyz
-DefaultPeers[] = ws://url2.xyz
-DefaultPeers[] = ws://url3.xyz
+DefaultPeers[] = ws://url1.xyz:8080
+DefaultPeers[] = ws://url2.xyz:8989
+DefaultPeers[] = ws://10.1.1.1:80
 ...
 
 [ServerConfig]
