@@ -1,27 +1,25 @@
 // require web socket
 const WebSocket = require('ws').WebSocket;
 
-function createClient(clientHostOrIp) {
-    let client = new WebSocket.WebSocket(clientHostOrIp);
+function createClient(serverHostOrIp, manager) {
+    let client = new WebSocket.WebSocket(serverHostOrIp);
 
     client.on('connectFailed', function(error) {
         console.log('Connect Error: ' + error.toString());
     });
     
     client.on('message', function(message) {
-        console.log(message.toString())
-        if (message.type === 'utf8') {
-            console.log("Received: '" + message.utf8Data + "'");
-        }
+        manager.messageHandler.handle(message);
     });
 
     client.on('close', function() {
-        console.log('\tConnection closed with server ' + clientHostOrIp);
+        console.log('\tConnection closed with server ' + serverHostOrIp);
     });
     
 
     client.on('error', function(error) {
-        console.log("ERROR TEST");
+        console.log("ERROR: Connection with " + serverHostOrIp + " closed.");
+        manager.closeClient(serverHostOrIp)
     });
     return client;
 

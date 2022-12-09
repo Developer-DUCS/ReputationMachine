@@ -9,14 +9,16 @@
 // ~20 lines of code
 
 const createClient = require('./socket_client');
+const MessageHandler = require('./message_handler')
 
 class ClientManager {
     constructor() {
       this.sockets = [];
+      this.msgHandler = new MessageHandler();
     }
 
     addClient(url) {
-      let socket = createClient(url);
+      let socket = createClient(url, this);
       this.sockets.push(socket);
       return socket;
     }

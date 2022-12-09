@@ -19,6 +19,8 @@
   "homepage": "https://github.com/Developer-DUCS/ReputationMachine#readme",
   "dependencies": {
     "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "ini": "^3.0.1",
     "os": "^0.1.2",
     "ws": "^8.11.0"
   }

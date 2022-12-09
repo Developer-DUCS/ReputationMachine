@@ -1,6 +1,6 @@
 const { Server } = require('ws');
 
-function createServer(port) {
+function createServer(port, messageHandler) {
    // create websocket server
    const sockserver = new Server({ port: port });
 
@@ -11,7 +11,7 @@ function createServer(port) {
       ws.on('close', () => console.log('Client has disconnected!'));
 
       ws.on('message', function(msg){
-         console.log(msg.toString());
+         messageHandler.handle(msg);
       });
    });
 

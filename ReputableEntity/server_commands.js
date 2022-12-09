@@ -1,7 +1,7 @@
 const os = require("os");
 const createClient = require('./socket_client');
 
-function initCommands(manager, websocketServer) {
+function initCommands(manager, websocketServer, messageHandler) {
     process.stdin.setEncoding("utf8");
 
     process.stdin.on("readable", function() {
