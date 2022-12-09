@@ -1,3 +1,9 @@
+// File: socket_server.js
+// Author: Julian Fisher
+// Date: 12/9/2022
+// Description: Create and return a new WebSocket server that listens on the given port
+// and passes all messages to messageHandler
+
 const { Server } = require('ws');
 
 function createServer(port, messageHandler) {

@@ -1,7 +1,13 @@
+// File: server_commands.js
+// Author: Julian Fisher
+// Date: 12/9/2022
+// Description: Define the commands that can be sent to the server while it is running. 
+// Myst provide a ClientManager web socket server to properly process commands.
+ 
 const os = require("os");
 const createClient = require('./socket_client');
 
-function initCommands(manager, websocketServer, messageHandler) {
+function initCommands(manager, websocketServer) {
     process.stdin.setEncoding("utf8");
 
     process.stdin.on("readable", function() {

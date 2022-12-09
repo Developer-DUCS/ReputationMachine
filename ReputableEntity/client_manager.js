@@ -4,7 +4,14 @@
 // Description: 
 // This file defines a clientManager class that is used to create and track
 // websocket client connections to remote servers
-
+// METHODS:
+// addClient(url) - Connect to a WebSocket server and add the client to the 
+//    list of client connections
+// closeClient(url) - Closes the connection to the server with the given URL
+//    and removes the client from the list of clients
+// messageClient(msg) - Sends a message to all clients that are currently connected
+// getClients() - Returns a list of all client connection URLs
+// getNumClients() - Returns the number of current client connections
 // This code was partially generate the openAI chat bot found at chat.openai.com
 // ~20 lines of code
 
