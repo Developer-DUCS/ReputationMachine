@@ -4,7 +4,7 @@ The ReputationMachine project is a capstone project at Drury University (2022-20
 
 ## Starting the Server
 
-Starting the server is a straightforward process. Simply clone this repo, and run `node server.js [path/to/config.ini]`. When starting the server you may, but do not have to, supply the path to a config file. If no config file path is specified, the default config file located at `./ReputationMachine/ReputableEntity/config.ini` is used.
+Starting the server is a straightforward process. Simply clone this repo, and run `node server.js path/to/config.ini`. When starting the server you may, but do not have to, supply the path to a config file. If no config file path is specified, the default config file located at `./ReputationMachine/ReputableEntity/config.ini` is used.
 
 ## Config File Structure
 
