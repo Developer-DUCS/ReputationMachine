@@ -1,10 +1,10 @@
 # ReputationMachine
 
-The ReputationMachine project is a capstone project at Drury University (2022-2023). The purpose of the Reputation Machine is to build a better [reputation system](https://en.wikipedia.org/wiki/Reputation_system#:~:text=Reputation%20systems%20are%20programs%20or,to%20build%20trust%20through%20reputation). When building a typical reputation system, all users must trust a central authority to manage and moderate the system. This means reputation systems are inherently vulnerable to being manipulated by those who run them. The goal of the Reputation Machine is to move this trust from a central authority into the technology that makes the system work. The Reputation Machine accomplishes this goal by using a distributed network to share reputation information as well as relying on blockchain technology to help verify the legitimacy of the information that is being shared.
+The ReputationMachine project is a capstone project at Drury University (2022-2023). The purpose of the Reputation Machine is to make a system that facilitates making better [reputation system](https://en.wikipedia.org/wiki/Reputation_system#:~:text=Reputation%20systems%20are%20programs%20or,to%20build%20trust%20through%20reputation). When building a typical reputation system, all users must trust a central authority to manage and moderate the system. This means reputation systems are inherently vulnerable to being manipulated by those who run them. The goal of the Reputation Machine is to move this trust from a central authority into the technology that makes the system work. The Reputation Machine accomplishes this goal by using a distributed network to share reputation information as well as relying on blockchain technology to help verify the legitimacy of the information that is being shared.
 
 ## Starting the Server
 
-Starting the server is a straightforward process. Simply clone this repo, and run `node server.js [path/to/config.ini]`. When starting the server you may, but do not have to, supply the path to a config file. If no config file path is specified, the default config file located at `./ReputationMachine/ReputableEntity/config.ini` is used.
+Starting the server is a straightforward process. Simply clone this repo, and run `node server.js path/to/config.ini`. When starting the server you may, but do not have to, supply the path to a config file. If no config file path is specified, the default config file located at `./ReputationMachine/ReputableEntity/config.ini` is used.
 
 ## Config File Structure
 
@@ -12,9 +12,9 @@ The config file is an [ini file](https://en.wikipedia.org/wiki/INI_file) with th
 
 ```text
 [Peers]
-DefaultPeers[] = ws://url1.xyz
-DefaultPeers[] = ws://url2.xyz
-DefaultPeers[] = ws://url3.xyz
+DefaultPeers[] = ws://url1.xyz:8080
+DefaultPeers[] = ws://url2.xyz:8989
+DefaultPeers[] = ws://10.1.1.1:80
 ...
 
 [ServerConfig]
