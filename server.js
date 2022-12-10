@@ -10,7 +10,7 @@ if (process.argv[2] == undefined) {
     config = ini.parse(fs.readFileSync('./ReputableEntity/config.ini','utf-8'))
 }
 else {
-    config = ini.parse(fs.readFileSync(process.argv[3]))
+    config = ini.parse(fs.readFileSync(process.argv[2],'utf-8'))
 }
 
 const PORT = config.ServerConfig.Port
