@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>3rd Party Test Environment</title>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+  <body>
+    <h1 id="title">3rd Party Test Environment</h1>
+    <div class="tab">
+      <button id="review" class="tab_button">Review</button>
+      <button id="rating" class="tab_button">Rating</button>
+      <button id="random" class="tab_button">Random</button>
+    </div>
+    <form id="create_review">
+      <label for="source">Source:</label>
+      <input type="text" id="source" name="source"><br>
+
+      <label for="target">Target:</label>
+      <input type="text" id="target" name="target"><br>
+              
+      <label for="rev">Review:</label>
+      <textarea type="text" id="rev" name="rev"></textarea><br>
+
+      <button type="button" id="autofill_review">Autofill</button><br>
+      <button type="button" id="submit">Submit</button>
+    </form>
+    <form id="create_rating">
+      <label for="source_rating">Source:</label>
+      <input type="text" id="source_rating" name="source_rating"><br>
+
+      <label for="target_rating">Target:</label>
+      <input type="text" id="target_rating" name="target_rating"><br>
+              
+      <label for="rate">Rating:</label>
+      <input type="text" id="rate" name="rate"><br>
+
+      <button type="button" id="autofill_rating">Autofill</button><br>
+      <button type="button" id="submit_rating">Submit</button>
+    </form>
+    <form id="create_random">
+      <button type="button" id="rdm">Generate Random Receipt</button>
+    </form>
+    <script src="./renderer.js"></script>
+    <script src="./create_receipt.js"></script>
+  </body>
+</html>
