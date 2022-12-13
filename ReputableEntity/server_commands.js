@@ -7,7 +7,7 @@
 const os = require("os");
 const createClient = require('./socket_client');
 
-function initCommands(manager, websocketServer) {
+function initCommands(manager, websocketServer, iniConfig) {
     process.stdin.setEncoding("utf8");
 
     process.stdin.on("readable", function() {
@@ -101,6 +101,21 @@ function initCommands(manager, websocketServer) {
                 else {
                     console.error("\x1b[31m%s\x1b[0m", "ERROR: Invalid syntax for SEND command")
                 }
+            }
+
+            // RECCONECT Command
+            // Drop all connections and spawn connections from the loaded config file
+            // Syntax: reconnect
+            else if (cmd == "reconnect"){
+                // close all connections
+                manager.getClients().forEach(url => {
+                    manager.closeClient(url);
+                });
+
+                // spawn initial connections from config file
+                iniConfig.Peers.DefaultPeers.forEach(url => {
+                    manager.addClient(url);
+                });
             }
 
             // when a command is run, a blank command is detected. Eat that error here

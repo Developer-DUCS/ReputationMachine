@@ -38,7 +38,7 @@ class ClientManager {
       }
     }
 
-    messageClients(msg) {
+    send(msg) {
         this.sockets.forEach((sock) => {
             sock.send(msg);
         });

@@ -15,17 +15,17 @@ else {
 
 const PORT = config.ServerConfig.Port
 
+console.log("WebSocket server listening on port", PORT);
 
 messageHandler = new MessageHandler();
 sockServ = createSocketServer(PORT, messageHandler);
 clients = new ClientManager();
 
-// spawn initial connections from config file
-config.Peers.DefaultPeers.forEach(url => {
-    clients.addClient(url);
-});
+if (config.Peers.DefaultPeers != undefined){
+    // spawn initial connections from config file
+    config.Peers.DefaultPeers.forEach(url => {
+        clients.addClient(url);
+    });
+}
 
-
-console.log("WebSocket server listening on port", PORT);
-
-initCommandLine(clients,sockServ);
+initCommandLine(clients,sockServ,config);

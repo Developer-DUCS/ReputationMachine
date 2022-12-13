@@ -18,14 +18,14 @@ class MessageHandler {
         this.recentRequests = [];
     }
 
-    handle() {
-        console.log("Handled");
-        if (this.jsonMessage.Header.MsgType === 'SendReceipt') {
-            SendReceipt(this.jsonMessage);
+    handle(jsonMessage) {
+        console.log("Received " + jsonMessage);
+        /*if (jsonMessage.Header.MsgType === 'SendReceipt') {
+            SendReceipt(jsonMessage);
         }
-        else if (this.jsonMessage.Header.MsgType === 'ReceiveReceipt') {
-            ReceiveReceipt(this.jsonMessage);
-        }
+        else if (jsonMessage.Header.MsgType === 'ReceiveReceipt') {
+            ReceiveReceipt(jsonMessage);
+        }*/
     }
 
     SendReceipt(jsonMessage) {
