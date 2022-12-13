@@ -44,3 +44,9 @@ When the server is running, you have the ability to send commands to the server 
 
 **Syntax**: send from {client|server|all} *MESSAGE*  
 **Description**: Send a message from your server to nodes you are peered with. You must specify if you want the message to be sent from this node's clients, server, or both.
+
+
+## RECONNECT
+
+**Syntax**: reconnect
+**Description**: Drop all connections and spawn connections from the loaded config file
