@@ -1,3 +1,8 @@
+// File: server.js
+// Author: Julian Fisher
+// Date: 12/9/2022
+// Description: Initialize the server to handle sending and recieving websocket messages
+
 const createSocketServer = require('./ReputableEntity/websocket-messaging/socket_server');
 const initCommandLine  = require('./ReputableEntity/server_commands');
 const ClientManager = require('./ReputableEntity/websocket-messaging/client_manager')

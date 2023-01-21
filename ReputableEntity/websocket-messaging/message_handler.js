@@ -28,11 +28,11 @@ class MessageHandler {
         }
     }
 
-    SendReceipt(jsonMessage) {
+    sendReceipt(jsonMessage) {
         console.log('SendReceipt');
     }
 
-    RequestReceipt(jsonMessage) {
+    requestReceipt(jsonMessage) {
         console.log('ReceiveReceipt');
     }
 

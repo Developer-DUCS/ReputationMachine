@@ -7,7 +7,7 @@
 const os = require("os");
 const { send } = require("process");
 const createClient = require('./websocket-messaging/socket_client');
-const standardLib = require('./standardLib')
+const printErrorMessage = require('./printError')
 
 function initCommands(manager, websocketServer, iniConfig) {
     process.stdin.setEncoding("utf8");
@@ -57,7 +57,7 @@ function parseCommand(args, websocketServer, manager, iniConfig){
 
         // throw an error if there is an unrecognized command
         default:
-            standardLib.printErrorMessage('Command not recognized for command "' + str + '"');
+            printErrorMessage('Command not recognized for command "' + args.join(' ') + '"');
     }
 }
 
@@ -71,7 +71,7 @@ function peer(args, manager){
     try{
         manager.addClient(args[1]);
     } catch (error) {
-        standardLib.printErrorMessage("Error connecting to new peer " + args[1]);
+        printErrorMessage("Error connecting to new peer " + args[1]);
     }
 }
 
@@ -80,7 +80,7 @@ function peer(args, manager){
 // Syntax: show clients
 function show(args, manager){
     if (args[1] != "clients"){
-        standardLib.printErrorMessage("Invalid show command for target " + args[1]);
+        printErrorMessage("Invalid show command for target " + args[1]);
         return;
     }
 
@@ -102,7 +102,7 @@ function show(args, manager){
 //      <target url> the url of the target to close
 function close(args, manager) {
     if (args[1] == undefined || args[1].toLowerCase() != "client"){
-        standardLib.printErrorMessage("Invalid close command for target type " + args[1]);
+        printErrorMessage("Invalid close command for target type " + args[1]);
         return;
     }
     try {
@@ -110,7 +110,7 @@ function close(args, manager) {
         manager.closeClient(target);
         return;
     } catch (e){
-        standardLib.printErrorMessage(e.message);
+        printErrorMessage(e.message);
     }
 }
 
@@ -173,7 +173,7 @@ function sendCommand(args, websocketServer, manager){
     }
 
     else {
-        standardLib.printErrorMessage("Invalid syntax for SEND command")
+        printErrorMessage("Invalid syntax for SEND command")
     }
 }
 
@@ -186,7 +186,7 @@ function reconnect(args, manager, iniConfig){
         try{
             manager.closeClient(url);
         } catch (e){
-            standardLib.printErrorMessage(e.message)
+            printErrorMessage(e.message)
         }
     });
 
@@ -195,7 +195,7 @@ function reconnect(args, manager, iniConfig){
         try{
             manager.addClient(url);
         } catch(e) {
-            standardLib.printErrorMessage(e.message)
+            printErrorMessage(e.message)
         }
     });
 }
