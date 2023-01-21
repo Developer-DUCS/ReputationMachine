@@ -5,7 +5,7 @@ function createClient(serverHostOrIp, manager) {
     let client = new WebSocket.WebSocket(serverHostOrIp);
 
     client.on('connectFailed', function(error) {
-        console.log('Connect Error: ' + error.toString());
+        printErrorMessage('Connect Error: ' + error.toString());
     });
     
     client.on('message', function(message) {
@@ -18,12 +18,15 @@ function createClient(serverHostOrIp, manager) {
     
 
     client.on('error', function(error) {
-        console.log("ERROR: Connection with " + serverHostOrIp + " closed.");
+        printErrorMessage("Closing connection with client " + serverHostOrIp + ".");
         manager.closeClient(serverHostOrIp)
     });
     return client;
+}
 
-
+// print an error message to the console
+function printErrorMessage(message){
+    console.error("\x1b[31m%s\x1b[0m", "ERROR: " + message);
 }
 
 module.exports = createClient

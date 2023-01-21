@@ -1,8 +1,8 @@
-const createSocketServer = require('./ReputableEntity/socket_server');
+const createSocketServer = require('./ReputableEntity/websocket-messaging/socket_server');
 const initCommandLine  = require('./ReputableEntity/server_commands');
-const ClientManager = require('./ReputableEntity/client_manager')
+const ClientManager = require('./ReputableEntity/websocket-messaging/client_manager')
 const express = require('express');
-const MessageHandler = require('./ReputableEntity/message_handler')
+const MessageHandler = require('./ReputableEntity/websocket-messaging/message_handler')
 const ini = require('ini')
 const fs = require('fs')
 
@@ -15,17 +15,17 @@ else {
 
 const PORT = config.ServerConfig.Port
 
-console.log("WebSocket server listening on port", PORT);
-
 messageHandler = new MessageHandler();
 sockServ = createSocketServer(PORT, messageHandler);
-clients = new ClientManager();
+clientManager = new ClientManager();
+
+console.log("WebSocket server listening on port", PORT);
 
 if (config.Peers.DefaultPeers != undefined){
     // spawn initial connections from config file
     config.Peers.DefaultPeers.forEach(url => {
-        clients.addClient(url);
+        clientManager.addClient(url);
     });
 }
 
-initCommandLine(clients,sockServ,config);
+initCommandLine(clientManager,sockServ,config);

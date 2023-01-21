@@ -5,7 +5,8 @@
 // Myst provide a ClientManager web socket server to properly process commands.
  
 const os = require("os");
-const createClient = require('./socket_client');
+const { send } = require("process");
+const createClient = require('./websocket-messaging/socket_client');
 
 function initCommands(manager, websocketServer, iniConfig) {
     process.stdin.setEncoding("utf8");
@@ -17,119 +18,189 @@ function initCommands(manager, websocketServer, iniConfig) {
             // break the line into its arguments
             let args = str.split(" ");
 
-            // the first argument is the command
-            let cmd = args[0].toLowerCase();
-
-            // PEER command
-            // Description: Open a new websocket connection to a new websocket server and add it
-            // to the list of client connections
-            // Syntax: peer <new ws url>
-            //      <new ws url> = the url for the websocket to connect to
-            if (cmd == "peer") {
-                console.log("\tConnecting to " + args[1]);
-                try{
-                    manager.addClient(args[1]);
-                } catch (error) {
-                    console.log("\t"+error);
-                    console.error("\x1b[31m%s\x1b[0m", "ERROR: Error connecting to new peer " + args[1]);
-                }
-            }
-
-            // SHOW CLIENTS command
-            // Description: shows the host of all websocket client connections
-            // Syntax: show clients
-            else if (cmd == "show" && args[1] == "clients") {
-
-                if (manager.getNumClients() == 0){
-                    console.log("\tNO CLIENTS")
-                }
-                else{
-                    manager.getClients().forEach(client => {
-                        console.log("\t"+client);
-                    });
-                }
-            }
-
-            // CLOSE command
-            // close a connection to a peer
-            // Syntax: CLOSE <CLIENT or SERVER> <target url>
-            //      <client or server> say if it is a client or server connection to close
-            //      <target url> the url of the target to close
-            else if (cmd == "close" && args[1] == "client") {
-                let target = args[2];
-                manager.closeClient(target);
-            }
-
-            // SEND command 
-            // send a message from all clients to the server they are connected to 
-            // Note, when parsing the message, everything after the <source> will be part of the message, and all
-            // whitespace will be replaced by a space
-            // Syntax: send from <source> <message>
-            //      <source> = "clients" "server" or "all"
-            //      <message> = message to be sent
-            else if (cmd == "send") {
-                if (args[1].toLowerCase() == "from"){
-                    let src = args[2].toLowerCase();
-
-                    let numArgs = args.length
-                    let msg = "";
-
-                    args.slice(3,numArgs).forEach((msgPiece) => {
-                        msg += msgPiece + " ";
-                    });
-
-                    console.log(msg);
-
-                    if (src == "clients") {
-                        console.log("\tSending message from all clients.")
-                        manager.messageClients(msg);
-                    }
-                    else if (src == "server") {
-                        console.log("\tSending message from server to all connected clients.")
-                        websocketServer.clients.forEach(client => {
-                            client.send(msg);
-                        });
-                    }
-                    else if (src == "all") {
-                        console.log("\tSending message from server to all connected nodes.")
-                        websocketServer.clients.forEach(client => {
-                            client.send(msg);
-                        });
-                        manager.send(msg);
-                    }
-                }
-                else {
-                    console.error("\x1b[31m%s\x1b[0m", "ERROR: Invalid syntax for SEND command")
-                }
-            }
-
-            // RECCONECT Command
-            // Drop all connections and spawn connections from the loaded config file
-            // Syntax: reconnect
-            else if (cmd == "reconnect"){
-                // close all connections
-                manager.getClients().forEach(url => {
-                    manager.closeClient(url);
-                });
-
-                // spawn initial connections from config file
-                iniConfig.Peers.DefaultPeers.forEach(url => {
-                    manager.addClient(url);
-                });
-            }
-
-            // when a command is run, a blank command is detected. Eat that error here
-            else if (cmd == ""){
-                return;
-            }
-            // throw an error if there is an unrecognized command
-            else {
-                console.error("\x1b[31m%s\x1b[0m", 'ERROR: command not recognized for command "' + str + '"');
-            }
-        })
+            parseCommand(args, websocketServer, manager, iniConfig);
+        });
 
         process.stdin.resume();
     });
 }
 
+function parseCommand(args, websocketServer, manager, iniConfig){
+    // the first argument is the command
+    let cmd = args[0].toLowerCase();
+
+    switch(cmd){
+        case "peer":
+            peer(args, manager);
+            break;
+
+        case "show":
+            show(args, manager);
+            break;
+
+        case "close":
+            close(args, manager);
+            break;
+
+        case "send":
+            sendCommand(args, websocketServer, manager);
+            break;
+
+        case "reconnect":
+            reconnect(args, manager, iniConfig);
+            break;
+
+        // when a command is run, a blank command is detected. Eat that error here
+        case "":
+            break;
+
+        // throw an error if there is an unrecognized command
+        default:
+            console.error("\x1b[31m%s\x1b[0m", 'ERROR: command not recognized for command "' + str + '"');
+    }
+}
+
+// print an error message to the console
+function printErrorMessage(message){
+    console.error("\x1b[31m%s\x1b[0m", "ERROR: " + message);
+}
+
+// PEER command
+// Description: Open a new websocket connection to a new websocket server and add it
+// to the list of client connections
+// Syntax: peer <new ws url>
+//      <new ws url> = the url for the websocket to connect to
+function peer(args, manager){
+    console.log("\tConnecting to " + args[1]);
+    try{
+        manager.addClient(args[1]);
+    } catch (error) {
+        printErrorMessage("Error connecting to new peer " + args[1]);
+    }
+}
+
+// SHOW CLIENTS command
+// Description: shows the host of all websocket client connections
+// Syntax: show clients
+function show(args, manager){
+    if (args[1] != "clients"){
+        printErrorMessage("Invalid show command for target " + args[1]);
+        return;
+    }
+
+    if (manager.getNumClients() == 0){
+        console.log("\tNO CLIENTS")
+    }
+    else{
+        manager.getClients().forEach(client => {
+            console.log("\t"+client);
+        });
+    }
+    return;
+}
+
+// CLOSE command
+// close a connection to a peer
+// Syntax: CLOSE <CLIENT or SERVER> <target url>
+//      <client or server> say if it is a client or server connection to close
+//      <target url> the url of the target to close
+function close(args, manager) {
+    if (args[1] == undefined || args[1].toLowerCase() != "client"){
+        console.error("\x1b[31m%s\x1b[0m", "ERROR: Invalid close command for target type " + args[1]);
+        return;
+    }
+    try {
+        let target = args[2];
+        manager.closeClient(target);
+        return;
+    } catch (e){
+        printErrorMessage(e.message);
+    }
+}
+
+// SEND command 
+// send a message from all clients to the server they are connected to 
+// Note, when parsing the message, everything after the <source> will be part of the message, and all
+// whitespace will be replaced by a space
+// Syntax: send {(from <source> <message>) | (test <message type>)}
+//      <source> = "clients" "server" or "all"
+//      <message> = message to be sent
+//      <message type> = The message type you want to test. Either "ShareReceipt" or "RequestReceipt"
+function sendCommand(args, websocketServer, manager){
+    if (args[1] == undefined || args[2] == undefined) {
+
+    }
+    else if (args[1].toLowerCase() == "from"){
+        let src = args[2].toLowerCase();
+        let numArgs = args.length
+        let msg = "";
+
+        args.slice(3,numArgs).forEach((msgPiece) => {
+            msg += msgPiece + " ";
+        });
+
+
+        if (src == "clients") {
+            console.log("\tSending message from all clients.")
+            manager.messageClients(msg);
+        }
+        else if (src == "server") {
+            console.log("\tSending message from server to all connected clients.")
+            websocketServer.clients.forEach(client => {
+                client.send(msg);
+            });
+        }
+        else if (src == "all") {
+            console.log("\tSending message from server to all connected nodes.")
+            websocketServer.clients.forEach(client => {
+                client.send(msg);
+            });
+            manager.send(msg);
+        }
+    }
+
+    else if (args[1].toLowerCase() == "test") {
+        if (args[2].toLowerCase() == "sharereceipt") {
+            console.log("\tSending message from server to all connected nodes.")
+            websocketServer.clients.forEach(client => {
+                client.send(msg);
+            });
+            manager.send(msg);
+        }
+        else if (args[2].toLowerCase() == "requestreceipt") {
+            console.log("\tSending message from server to all connected nodes.")
+            websocketServer.clients.forEach(client => {
+                client.send(msg);
+            });
+            manager.send(msg);
+        }
+    }
+
+    else {
+        printErrorMessage("Invalid syntax for SEND command")
+    }
+}
+
+// RECCONECT Command
+// Drop all connections and spawn connections from the loaded config file
+// Syntax: reconnect
+function reconnect(args, manager, iniConfig){
+    // close all connections
+    manager.getClients().forEach(url => {
+        try{
+            manager.closeClient(url);
+        } catch (e){
+            printErrorMessage(e.message)
+        }
+    });
+
+    // spawn initial connections from config file
+    iniConfig.Peers.DefaultPeers.forEach(url => {
+        try{
+            manager.addClient(url);
+        } catch(e) {
+            printErrorMessage(e.message)
+        }
+    });
+}
 module.exports = initCommands;

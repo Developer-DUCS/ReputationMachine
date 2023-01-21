@@ -20,12 +20,12 @@ class MessageHandler {
 
     handle(jsonMessage) {
         console.log("Received " + jsonMessage);
-        /*if (jsonMessage.Header.MsgType === 'SendReceipt') {
+        if (jsonMessage.Header.MsgType === 'SendReceipt') {
             SendReceipt(jsonMessage);
         }
         else if (jsonMessage.Header.MsgType === 'ReceiveReceipt') {
             ReceiveReceipt(jsonMessage);
-        }*/
+        }
     }
 
     SendReceipt(jsonMessage) {

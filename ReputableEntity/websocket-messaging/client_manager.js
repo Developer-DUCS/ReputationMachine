@@ -36,6 +36,9 @@ class ClientManager {
         socket.close();
         this.sockets = this.sockets.filter(socket => socket.url !== url);
       }
+      else {
+        throw new Error('ERROR: Client ' + url + ' not found.');
+      }
     }
 
     send(msg) {
