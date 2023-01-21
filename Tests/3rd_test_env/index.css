@@ -1,0 +1,52 @@
+body {
+    background-color: rgb(190,190,190);
+}
+
+#title {
+    text-align: center;
+}
+
+/*tab styling from https://www.w3schools.com/howto/howto_js_tabs.asp*/
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+  
+.tab .tab_button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+  
+.tab .tab_button:hover {
+    background-color: #ddd;
+}
+
+form {
+    width: 200px;
+    margin: 0 auto;
+    margin-top: 5%;
+}
+
+#create_rating, #create_random {
+    display: none;
+}
+
+#autofill_review, #autofill_rating, #submit, #submit_rating {
+    margin: auto;
+    display: block;
+    margin-right: 80px;
+}
+
+label, input {
+    display: block;
+}
+
+label {
+    margin-bottom: 10px;
+}
