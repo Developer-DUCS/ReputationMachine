@@ -6,6 +6,7 @@ const MessageHandler = require('./ReputableEntity/websocket-messaging/message_ha
 const ini = require('ini')
 const fs = require('fs')
 
+// Check if a config file was provided, if so, load that config, if not, use the default config file
 if (process.argv[2] == undefined) {
     config = ini.parse(fs.readFileSync('./ReputableEntity/config.ini','utf-8'))
 }
