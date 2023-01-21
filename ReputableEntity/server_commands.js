@@ -56,7 +56,7 @@ function parseCommand(args, websocketServer, manager, iniConfig){
 
         // throw an error if there is an unrecognized command
         default:
-            console.error("\x1b[31m%s\x1b[0m", 'ERROR: command not recognized for command "' + str + '"');
+            printErrorMessage('Command not recognized for command "' + str + '"');
     }
 }
 
@@ -106,7 +106,7 @@ function show(args, manager){
 //      <target url> the url of the target to close
 function close(args, manager) {
     if (args[1] == undefined || args[1].toLowerCase() != "client"){
-        console.error("\x1b[31m%s\x1b[0m", "ERROR: Invalid close command for target type " + args[1]);
+        printErrorMessage("Invalid close command for target type " + args[1]);
         return;
     }
     try {
