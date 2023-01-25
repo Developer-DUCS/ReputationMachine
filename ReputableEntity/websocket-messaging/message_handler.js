@@ -11,41 +11,48 @@
 //      asks all peers for receipts that match the criteria
 //  checkMessage(jsonMessage) - Verify that the message is properly formatted
 
-// Some of this code is AI generated
-// ~20 lines
+const checkMessage = require('./message_checker')
+const Cache = require('./data_cache')
+
 class MessageHandler {
-    constructor() {
+    /** 
+    * @param {number} messageRetentionTime - The maximum number of entries to be stored in the cache
+    * @param {number} maxNumMessagesRetained - The maximum amount of time to hold data in the cache, in milliseconds
+    */
+    constructor(messageRetentionTime, maxNumMessagesRetained) {
         this.recentRequests = [];
+        this.messageCache = new Cache(messageRetentionTime, maxNumMessagesRetained);
     }
 
     handle(jsonMessage) {
         console.log("Received " + jsonMessage);
-        if (jsonMessage.Header.MsgType === 'SendReceipt') {
-            SendReceipt(jsonMessage);
+        if (!checkMessage(jsonMessage)){
+            throw new Error("Invalid message recieved");
+        }
+
+        let msgID = jsonMessage['Header']['MsgID'];
+
+        if(this.messageCache.isCached(msgID)){
+            throw new Error("Message already handled");
+        }
+        this.messageCache.cache(msgID);
+
+        if (jsonMessage.Header.MsgType === 'ShareReceipt') {
+            shareReceipt(jsonMessage);
         }
         else if (jsonMessage.Header.MsgType === 'ReceiveReceipt') {
-            ReceiveReceipt(jsonMessage);
+            receiveReceipt(jsonMessage);
         }
     }
 
-    sendReceipt(jsonMessage) {
-        console.log('SendReceipt');
+    #shareReceipt(jsonMessage) {
+        console.log('shareReceipt');
     }
 
-    requestReceipt(jsonMessage) {
+    #requestReceipt(jsonMessage) {
         console.log('ReceiveReceipt');
     }
-
-    checkMessage(rcpt){
-        if (rcpt.hasOwnProperty('Header') && rcpt.hasOwnProperty('Body')) {
-            console.log('Receipt has both Header and Body');
-            return false
-        }
-        else {
-            console.log('json is missing Header or Body');
-            return true
-        }
-    }
 }
+
 
 module.exports = MessageHandler;

@@ -12,6 +12,7 @@
 // messageClient(msg) - Sends a message to all clients that are currently connected
 // getClients() - Returns a list of all client connection URLs
 // getNumClients() - Returns the number of current client connections
+
 // This code was partially generate the openAI chat bot found at chat.openai.com
 // ~20 lines of code
 
