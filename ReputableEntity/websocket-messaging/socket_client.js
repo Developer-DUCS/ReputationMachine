@@ -14,7 +14,12 @@ function createClient(serverHostOrIp, manager) {
     });
     
     client.on('message', function(message) {
-        manager.messageHandler.handle(message);
+        try{
+            manager.messageHandler.handle(message);
+        } catch (exception) {
+            console.log(exception);
+        }
+        
     });
 
     client.on('close', function() {

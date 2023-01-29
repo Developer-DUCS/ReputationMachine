@@ -16,16 +16,19 @@ const Cache = require('./data_cache')
 
 class MessageHandler {
     /** 
-    * @param {number} messageRetentionTime - The maximum number of entries to be stored in the cache
-    * @param {number} maxNumMessagesRetained - The maximum amount of time to hold data in the cache, in milliseconds
+    * @param {number} messageRetentionTime - The maximum number of messages to be stored in the cache
+    * @param {number} maxNumMessagesRetained - The maximum amount of time to hold messages in the cache, in milliseconds
+    * @param {number} maxReceiptRetentionTime - The maximum number of reputation receipts to be stored in the cache
+    * @param {number} maxNumReceiptsRetained - The maximum amount of time to hold reputation receipts in the cache, in milliseconds
     */
-    constructor(messageRetentionTime, maxNumMessagesRetained) {
-        this.recentRequests = [];
+    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained) {
         this.messageCache = new Cache(messageRetentionTime, maxNumMessagesRetained);
+        this.receiptCache = new Cache(maxReceiptRetentionTime, maxNumReceiptsRetained)
     }
 
     handle(jsonMessage) {
         console.log("Received " + jsonMessage);
+
         if (!checkMessage(jsonMessage)){
             throw new Error("Invalid message recieved");
         }
@@ -35,6 +38,7 @@ class MessageHandler {
         if(this.messageCache.isCached(msgID)){
             throw new Error("Message already handled");
         }
+
         this.messageCache.cache(msgID);
 
         if (jsonMessage.Header.MsgType === 'ShareReceipt') {
@@ -53,6 +57,5 @@ class MessageHandler {
         console.log('ReceiveReceipt');
     }
 }
-
 
 module.exports = MessageHandler;
