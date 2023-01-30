@@ -20,9 +20,9 @@ const createClient = require('./socket_client');
 const MessageHandler = require('./message_handler')
 
 class ClientManager {
-    constructor() {
+    constructor(MsgHandler) {
       this.sockets = [];
-      this.msgHandler = new MessageHandler();
+      this.msgHandler = MsgHandler;
     }
 
     addClient(url) {

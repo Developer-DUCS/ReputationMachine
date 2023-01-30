@@ -21,9 +21,12 @@ else {
 
 const PORT = config.ServerConfig.Port
 
-messageHandler = new MessageHandler();
+const cacheRetentionTime = config.ServerConfig.CacheTime
+const cacheMaxSize = config.ServerConfig.CacheMaxSize
+messageHandler = new MessageHandler(cacheRetentionTime,cacheMaxSize,cacheRetentionTime,cacheMaxSize);
+
 sockServ = createSocketServer(PORT, messageHandler);
-clientManager = new ClientManager();
+clientManager = new ClientManager(messageHandler);
 
 console.log("WebSocket server listening on port", PORT);
 
@@ -35,3 +38,8 @@ if (config.Peers.DefaultPeers != undefined){
 }
 
 initCommandLine(clientManager,sockServ,config);
+
+setInterval(() => {
+    console.log("Clearing cache");
+    messageHandler.refreshCaches();
+}, config.ServerConfig.CacheRefresh)

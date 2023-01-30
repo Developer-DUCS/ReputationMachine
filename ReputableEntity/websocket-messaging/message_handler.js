@@ -36,7 +36,7 @@ class MessageHandler {
         let msgID = jsonMessage['Header']['MsgID'];
 
         if(this.messageCache.isCached(msgID)){
-            throw new Error("Message already handled");
+            throw new Error("Message already recieved");
         }
 
         this.messageCache.cache(msgID);
@@ -50,11 +50,25 @@ class MessageHandler {
     }
 
     #shareReceipt(jsonMessage) {
+        // TODO:
+        // Verify rcpt hash w/ blockchain
+        
+        // Cache rcpt
+        // repeat message to other neighbors
         console.log('shareReceipt');
     }
 
     #requestReceipt(jsonMessage) {
+        // Search local cache for matching rcpts
+        // Search local db for matches
+        // Send response if rcpts are found
+        // Forward req to other neighbors
         console.log('ReceiveReceipt');
+    }
+
+    refreshCaches(){
+        this.messageCache.cleanCache();
+        this.receiptCache.cleanCache();
     }
 }
 
