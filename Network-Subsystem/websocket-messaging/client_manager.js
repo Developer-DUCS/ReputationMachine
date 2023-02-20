@@ -17,7 +17,7 @@
 // ~20 lines of code
 
 const createClient = require('./socket_client');
-const MessageHandler = require('./message_handler')
+const MessageHandler = require('./connection_manager')
 
 class ClientManager {
     constructor(MsgHandler) {
@@ -43,9 +43,19 @@ class ClientManager {
     }
 
     send(msg) {
-        this.sockets.forEach((sock) => {
-            sock.send(msg);
-        });
+      this.sockets.forEach((sock) => {
+        sock.send(msg);
+      });
+    }
+
+    // Send a message to all clients, except for the client with the URL or IP
+    // address provided in the except parameter
+    sendExcept(msg, except){
+      this.sockets.forEach((sock) => {
+        if (sock.remoteAddress != except) {
+          sock.send(msg).url;
+        }
+      });
     }
 
     getClients() {

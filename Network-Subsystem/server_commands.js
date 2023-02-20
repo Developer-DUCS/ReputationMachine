@@ -36,7 +36,7 @@ function parseCommand(args, websocketServer, manager, iniConfig){
             break;
 
         case "show":
-            show(args, manager);
+            show(args, manager, websocketServer);
             break;
 
         case "close":
@@ -77,22 +77,58 @@ function peer(args, manager){
 
 // SHOW CLIENTS command
 // Description: shows the host of all websocket client connections
-// Syntax: show clients
-function show(args, manager){
-    if (args[1] != "clients"){
-        printErrorMessage("Invalid show command for target " + args[1]);
-        return;
-    }
+// Syntax: show peers
+function show(args, manager, sockServer){
 
-    if (manager.getNumClients() == 0){
-        console.log("\tNO CLIENTS")
-    }
-    else{
+    let clientList = []
+    if (manager.getNumClients() != 0){
         manager.getClients().forEach(client => {
-            console.log("\t"+client);
+            clientList.push(client);
         });
     }
-    return;
+
+    let serverList = []
+    sockServer.clients.forEach(clientConn => {
+        serverList.push(clientConn._socket.server._connectionKey);
+    });
+    
+    if (args[1] == "peers") {
+        let allConns = [...clientList, ...serverList]
+        if (allConns.length == 0){
+            console.log("NO PEERS CONNECTED")
+        }
+        else {
+            allConns.forEach(peer => {
+                console.log("\t" + peer);
+            });
+        }
+    }
+
+    else if (args[1] == "clients") {
+        if (clientList.length == 0){
+            console.log("NO CLIENTS CONNECTED")
+        }
+        else {
+            clientList.forEach(peer => {
+                console.log("\t" + peer);
+            });
+        }
+    }
+
+    else if (args[1] == "server") {
+        if (serverList.length == 0){
+            console.log("NO SERVER CONNECTIONS")
+        }
+        else {
+            serverList.forEach(peer => {
+                console.log("\t" + peer);
+            });
+        }
+    }
+
+    else {
+        printErrorMessage("ERROR: Invalid show command with target " + args[1])
+    }
 }
 
 // CLOSE command

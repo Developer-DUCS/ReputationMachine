@@ -1,8 +1,11 @@
 // File: message_handler.js
 // Author: Julian Fisher
 // Date: 12/9/2022
-// Description: This file exports the MessageHandler class. This class defines how
-// to handle message as they are passed through the network. 
+// Description: This file exports the ConnectionManager class. This class defines how
+// to handle message as they are passed through the network. As well as creating a websocket
+// server to listen for incoming connections, and a client manger to make outbound websocket
+// connection.
+//
 // METHODS:
 //  handle(jsonMessage) - Process the given message
 //  sendReceipt(jsonMessage) - Interprets the message as a SendReceipt message and distributes
@@ -11,22 +14,32 @@
 //      asks all peers for receipts that match the criteria
 //  checkMessage(jsonMessage) - Verify that the message is properly formatted
 
-const checkMessage = require('./message_checker')
-const Cache = require('./data_cache')
+const checkMessage = require('./message_checker');
+const Cache = require('./data_cache');
+const ClientManager = require('./client_manager');
+const WsServer = require('./socket_server');
+const rcpt_model = require('../models/receipts');
+const dbManager = require('../db_manager');
+const { json } = require('express');
 
-class MessageHandler {
+class ConnectionManager {
     /** 
     * @param {number} messageRetentionTime - The maximum number of messages to be stored in the cache
     * @param {number} maxNumMessagesRetained - The maximum amount of time to hold messages in the cache, in milliseconds
     * @param {number} maxReceiptRetentionTime - The maximum number of reputation receipts to be stored in the cache
     * @param {number} maxNumReceiptsRetained - The maximum amount of time to hold reputation receipts in the cache, in milliseconds
+    * @param {number} savePercent - The percentage of receipts to save as messages come through
     */
-    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained) {
+    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained, port, savePercent) {
         this.messageCache = new Cache(messageRetentionTime, maxNumMessagesRetained);
-        this.receiptCache = new Cache(maxReceiptRetentionTime, maxNumReceiptsRetained)
+        this.receiptCache = new Cache(maxReceiptRetentionTime, maxNumReceiptsRetained);
+        this.sockServ = WsServer(port, this);
+        this.clientManager = new ClientManager(this);
+        this.prctSave = savePercent;
+        this.dbMan = new dbManager()
     }
 
-    handle(jsonMessage) {
+    handleMessage(jsonMessage) {
         console.log("Received " + jsonMessage);
 
         if (!checkMessage(jsonMessage)){
@@ -50,11 +63,16 @@ class MessageHandler {
     }
 
     #shareReceipt(jsonMessage) {
+        messageSrc = jsonMessage["Header"]["SrcIPorHost"]
         // TODO:
         // Verify rcpt hash w/ blockchain
         
-        // Cache rcpt
-        // repeat message to other neighbors
+        if (Math.random() <= this.prctSave) {
+            this.dbMan.saveReceipt(jsonMessage["Body"]["Recetipt"]);
+        }
+        this.receiptCache.cache(jsonMessage["Body"]["Recetipt"]);
+        this.sendAllExcept(jsonMessage,messageSrc);
+
         console.log('shareReceipt');
     }
 
@@ -66,10 +84,21 @@ class MessageHandler {
         console.log('ReceiveReceipt');
     }
 
-    refreshCaches(){
+    // share receipt with all peers except for the excepted URL
+    sendAllExcept(msg, except){
+        // repeat message to other neighbors
+        websocketServer.clients.forEach(client => {
+            if (clientConn._socket.server._connectionKey != except){
+                client.send(msg);
+            }
+        });
+
+        this.clientManager.sendExcept(except);
+    }
+
+    refreshCache(){
         this.messageCache.cleanCache();
-        this.receiptCache.cleanCache();
     }
 }
 
-module.exports = MessageHandler;
+module.exports = ConnectionManager;

@@ -8,14 +8,13 @@ const printErrorMessage = require('../printError')
 
 function createClient(serverHostOrIp, manager) {
     let client = new WebSocket.WebSocket(serverHostOrIp);
-
     client.on('connectFailed', function(error) {
         printErrorMessage('Connect Error: ' + error.toString());
     });
     
     client.on('message', function(message) {
         try{
-            manager.messageHandler.handle(message);
+            manager.msgHandler.handleMessage(message);
         } catch (exception) {
             console.log(exception);
         }
@@ -31,6 +30,7 @@ function createClient(serverHostOrIp, manager) {
         printErrorMessage("Closing connection with client " + serverHostOrIp + ".");
         manager.closeClient(serverHostOrIp)
     });
+
     return client;
 }
 
