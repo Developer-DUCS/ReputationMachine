@@ -5,22 +5,21 @@
 
 const mongoose =  require('mongoose')
 const receiptSchema = require('./models/receipts')
-const ini = require('ini')
 
 class Database {
-    constructor(configFile) {
-        mongoose.connect(configFile.ServerConfig.DBConnectionString);
+    constructor(connectionString) {
+        mongoose.connect(connectionString);
         this.conn = mongoose.connection;
         this.conn.once('open', () => {
             console.log("MongoDB connected successfully")
         })
 
-        this.receipt = mongoose.model('Receipt', receiptSchema)
+        //this.receipt = mongoose.model('Receipt', receiptSchema)
     }
 
-    saveReceipt (rcpt){
+    /* saveReceipt (rcpt){
         this.receipt.save(rcpt);
-    }
+    } */
 
 
     

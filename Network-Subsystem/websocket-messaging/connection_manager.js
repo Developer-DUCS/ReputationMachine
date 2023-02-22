@@ -19,8 +19,6 @@ const Cache = require('./data_cache');
 const ClientManager = require('./client_manager');
 const WsServer = require('./socket_server');
 const rcpt_model = require('../models/receipts');
-const dbManager = require('../db_manager');
-const { json } = require('express');
 
 class ConnectionManager {
     /** 
@@ -30,13 +28,13 @@ class ConnectionManager {
     * @param {number} maxNumReceiptsRetained - The maximum amount of time to hold reputation receipts in the cache, in milliseconds
     * @param {number} savePercent - The percentage of receipts to save as messages come through
     */
-    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained, port, savePercent) {
+    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained, port, savePercent, databaseManager) {
         this.messageCache = new Cache(messageRetentionTime, maxNumMessagesRetained);
         this.receiptCache = new Cache(maxReceiptRetentionTime, maxNumReceiptsRetained);
         this.sockServ = WsServer(port, this);
         this.clientManager = new ClientManager(this);
         this.prctSave = savePercent;
-        this.dbMan = new dbManager()
+        this.dbMan = databaseManager;
     }
 
     handleMessage(jsonMessage) {
