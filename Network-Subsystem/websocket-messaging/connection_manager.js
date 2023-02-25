@@ -19,6 +19,7 @@ const Cache = require('./data_cache');
 const ClientManager = require('./client_manager');
 const WsServer = require('./socket_server');
 const rcpt_model = require('../models/receipts');
+const { json } = require('express');
 
 class ConnectionManager {
     /** 
@@ -37,7 +38,9 @@ class ConnectionManager {
         this.dbMan = databaseManager;
     }
 
-    handleMessage(jsonMessage) {
+    handleMessage(messageBuffer, messageSource) {
+        let jsonMessage = JSON.parse(messageBuffer)
+
         console.log("Received " + jsonMessage);
 
         if (!checkMessage(jsonMessage)){
@@ -47,31 +50,30 @@ class ConnectionManager {
         let msgID = jsonMessage['Header']['MsgID'];
 
         if(this.messageCache.isCached(msgID)){
-            throw new Error("Message already recieved");
+            console.log("Dropping message with ID '" + msgID + "': Message already recieved from another source")
+            return;
         }
 
         this.messageCache.cache(msgID);
 
         if (jsonMessage.Header.MsgType === 'ShareReceipt') {
-            shareReceipt(jsonMessage);
+            this.shareReceipt(jsonMessage,messageSource);
         }
         else if (jsonMessage.Header.MsgType === 'ReceiveReceipt') {
             receiveReceipt(jsonMessage);
         }
     }
 
-    #shareReceipt(jsonMessage) {
-        messageSrc = jsonMessage["Header"]["SrcIPorHost"]
+    shareReceipt(jsonMessage, msgSrc) {        
         // TODO:
         // Verify rcpt hash w/ blockchain
         
         if (Math.random() <= this.prctSave) {
-            this.dbMan.saveReceipt(jsonMessage["Body"]["Recetipt"]);
+            // this.dbMan.saveReceipt(jsonMessage["Body"]["Recetipt"]);
+            console.log("Saving to DB")
         }
         this.receiptCache.cache(jsonMessage["Body"]["Recetipt"]);
-        this.sendAllExcept(jsonMessage,messageSrc);
-
-        console.log('shareReceipt');
+        this.sendAllExcept(jsonMessage,msgSrc);
     }
 
     #requestReceipt(jsonMessage) {
@@ -84,14 +86,20 @@ class ConnectionManager {
 
     // share receipt with all peers except for the excepted URL
     sendAllExcept(msg, except){
+        let messageBuff = Buffer.from(JSON.stringify(msg));
+
         // repeat message to other neighbors
-        websocketServer.clients.forEach(client => {
-            if (clientConn._socket.server._connectionKey != except){
-                client.send(msg);
+        this.sockServ.clients.forEach(client => {
+            if (client != except){
+                client.send(messageBuff);
             }
         });
 
-        this.clientManager.sendExcept(except);
+        this.clientManager.sockets.forEach(client => {
+            if (client != except){
+                client.send(messageBuff);
+            }
+        })
     }
 
     refreshCache(){

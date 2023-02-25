@@ -12,10 +12,11 @@ function createServer(port, connectionManager) {
 
    // when a new connection is spawned, configure the call backs for that connection
    sockserver.on('connection', (ws, req) => {
+      const ip = req.socket.remoteAddress;
       ws.on('close', () => console.log('Client ' + ws.url + ' has disconnected!'));
 
-      ws.on('message', function(msg){
-         connectionManager.handleMessage(msg);
+      ws.on('message', (msg) => {
+         connectionManager.handleMessage(msg,ws);
       });
    });
 

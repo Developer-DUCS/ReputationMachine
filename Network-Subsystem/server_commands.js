@@ -75,21 +75,23 @@ function peer(args, manager){
     }
 }
 
-// SHOW CLIENTS command
+// SHOW PEERS command
 // Description: shows the host of all websocket client connections
 // Syntax: show peers
 function show(args, manager, sockServer){
 
     let clientList = []
     if (manager.getNumClients() != 0){
-        manager.getClients().forEach(client => {
+        manager.getClientURLs().forEach(client => {
             clientList.push(client);
         });
     }
 
     let serverList = []
     sockServer.clients.forEach(clientConn => {
-        serverList.push(clientConn._socket.server._connectionKey);
+
+        //serverList.push(clientConn._socket.server._connectionKey);
+        console.log(clientConn._socket._peername.address + ":" + clientConn._socket._peername.port);
     });
     
     if (args[1] == "peers") {
@@ -218,7 +220,7 @@ function sendCommand(args, websocketServer, manager){
 // Syntax: reconnect
 function reconnect(args, manager, iniConfig){
     // close all connections
-    manager.getClients().forEach(url => {
+    manager.getClientURLs().forEach(url => {
         try{
             manager.closeClient(url);
         } catch (e){

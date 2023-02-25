@@ -58,7 +58,7 @@ class ClientManager {
       });
     }
 
-    getClients() {
+    getClientURLs() {
         let clientURLs = []
         this.sockets.forEach((client) =>{
             clientURLs.push(client.url);

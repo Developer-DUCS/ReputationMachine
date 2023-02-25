@@ -14,7 +14,7 @@ function createClient(serverHostOrIp, manager) {
     
     client.on('message', function(message) {
         try{
-            manager.msgHandler.handleMessage(message);
+            manager.msgHandler.handleMessage(message,client);
         } catch (exception) {
             console.log(exception);
         }

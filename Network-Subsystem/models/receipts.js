@@ -8,6 +8,7 @@ const receipt = new mongoose.Schema(
             source: 'string',
             target: 'string',
             claim: {
+                id: 'string',
                 type: ['creation','modification','deletion'],
                 category: ['review','rating'],
                 content: 'string'
