@@ -41,7 +41,10 @@ class ConnectionManager {
     handleMessage(messageBuffer, messageSource) {
         let jsonMessage = JSON.parse(messageBuffer)
 
-        console.log("Received " + jsonMessage);
+        console.log("RECEIVED NEW MESSAGE");
+
+        for (let i = 0; i < 300000000; i++) {
+          }
 
         if (!checkMessage(jsonMessage)){
             throw new Error("Invalid message recieved");
