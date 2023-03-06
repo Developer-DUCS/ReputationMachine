@@ -18,8 +18,6 @@ const checkMessage = require('./message_checker');
 const Cache = require('./data_cache');
 const ClientManager = require('./client_manager');
 const WsServer = require('./socket_server');
-const rcpt_model = require('../models/receipts');
-const { json } = require('express');
 
 class ConnectionManager {
     /** 
