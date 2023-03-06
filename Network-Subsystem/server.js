@@ -52,7 +52,6 @@ app.get("/getNumPeers", (req, res) => {
 });
 
 
-// 
 app.listen(apiPort, () => {
     console.log("API listening on port",apiPort);
 });
