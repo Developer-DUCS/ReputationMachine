@@ -84,7 +84,7 @@ class ConnectionManager {
         // TODO:
         // Verify rcpt hash w/ blockchain
         
-        if (Math.random() <= this.prctSave) {
+        if (Math.random() * 100 <= this.prctSave) {
             // TODO:
             // SAVE TO DB
             console.log("Saving to DB")

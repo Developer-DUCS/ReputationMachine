@@ -26,10 +26,10 @@ else {
 
 const wsPort = config.ServerConfig.NodeCommunicationPort;
 const apiPort = config.ServerConfig.APIPort;
-const cacheRetentionTime = config.ServerConfig.CacheTime;
-const cacheMaxSize = config.ServerConfig.CacheMaxSize;
-const msgPrctSave = config.MessageConfig.PercentReceiptsSave;
-const TTL = config.MessageConfig.DefaultTTL;
+const cacheRetentionTime = parseInt(config.ServerConfig.CacheTime);
+const cacheMaxSize = parseInt(config.ServerConfig.CacheMaxSize);
+const msgPrctSave = parseInt(config.MessageConfig.PercentReceiptsSave);
+const TTL = parseInt(config.MessageConfig.DefaultTTL);
 
 let connMan = new ConnectionHandler(cacheRetentionTime,cacheMaxSize,cacheRetentionTime,cacheMaxSize, wsPort, msgPrctSave);
 console.log("WebSocket server listening on port", wsPort);
