@@ -18,6 +18,8 @@ const checkMessage = require('./message_checker');
 const Cache = require('./data_cache');
 const ClientManager = require('./client_manager');
 const WsServer = require('./socket_server');
+const printError = require('../printError');
+const { json } = require('body-parser');
 
 class ConnectionManager {
     /** 
@@ -27,28 +29,40 @@ class ConnectionManager {
     * @param {number} maxNumReceiptsRetained - The maximum amount of time to hold reputation receipts in the cache, in milliseconds
     * @param {number} savePercent - The percentage of receipts to save as messages come through
     */
-    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained, port, savePercent, databaseManager) {
+    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained, port, savePercent) {
         this.messageCache = new Cache(messageRetentionTime, maxNumMessagesRetained);
-        this.receiptCache = new Cache(maxReceiptRetentionTime, maxNumReceiptsRetained);
         this.sockServ = WsServer(port, this);
         this.clientManager = new ClientManager(this);
         this.prctSave = savePercent;
-        this.dbMan = databaseManager;
     }
 
-    handleMessage(messageBuffer, messageSource) {
-        let jsonMessage = JSON.parse(messageBuffer)
+    handleMessage(message, messageSource) {
+        let jsonMessage;
 
-        console.log("RECEIVED NEW MESSAGE");
-
-        for (let i = 0; i < 300000000; i++) {
-          }
-
-        if (!checkMessage(jsonMessage)){
-            throw new Error("Invalid message recieved");
+        // try to parse the message, if you can't it's already a json object
+        // this is needed because when a message is sent via the API it comes as an object
+        // and if it comes from a websocket it comes in as a buffer
+        try {
+            jsonMessage = JSON.parse(message);
+        } catch {
+            jsonMessage = message
         }
 
+        // If an improperly formatted json object is received, the check message function will
+        // throw an error, catch it here.
+        try {
+            if (!checkMessage(jsonMessage)){
+                printError("Invalid message recieved");
+                return;
+            }
+        }
+        catch {
+            printError("Invalid message recieved");
+            return;
+        }
+        
         let msgID = jsonMessage['Header']['MsgID'];
+        console.log("Processing message "+msgID)
 
         if(this.messageCache.isCached(msgID)){
             console.log("Dropping message with ID '" + msgID + "': Message already recieved from another source")
@@ -63,22 +77,23 @@ class ConnectionManager {
         else if (jsonMessage.Header.MsgType === 'ReceiveReceipt') {
             receiveReceipt(jsonMessage);
         }
+        return;
     }
 
-    shareReceipt(jsonMessage, msgSrc) {        
+    shareReceipt(jsonMessage, msgSrc) {
         // TODO:
         // Verify rcpt hash w/ blockchain
         
         if (Math.random() <= this.prctSave) {
-            // this.dbMan.saveReceipt(jsonMessage["Body"]["Recetipt"]);
+            // TODO:
+            // SAVE TO DB
             console.log("Saving to DB")
         }
-        this.receiptCache.cache(jsonMessage["Body"]["Recetipt"]);
         this.sendAllExcept(jsonMessage,msgSrc);
+        return;
     }
 
     #requestReceipt(jsonMessage) {
-        // Search local cache for matching rcpts
         // Search local db for matches
         // Send response if rcpts are found
         // Forward req to other neighbors

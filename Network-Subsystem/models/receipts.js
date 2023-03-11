@@ -2,16 +2,16 @@ const mongoose = require('mongoose');
 
 const receipt = new mongoose.Schema(
     {
-        hash: 'string',
-        txid: 'string',
+        hash: {type: String, required: true},
+        txid: {type: String, required: true},
         receipt: {
-            source: 'string',
-            target: 'string',
+            source: {type: String, required: true},
+            target: {type: String, required: true},
             claim: {
-                id: 'string',
+                id: {type: String, required: true},
                 type: ['creation','modification','deletion'],
                 category: ['review','rating'],
-                content: 'string'
+                content: String
             }
         }
     }

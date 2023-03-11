@@ -91,7 +91,7 @@ function show(args, manager, sockServer){
     sockServer.clients.forEach(clientConn => {
 
         //serverList.push(clientConn._socket.server._connectionKey);
-        console.log(clientConn._socket._peername.address + ":" + clientConn._socket._peername.port);
+        console.log("\t" + clientConn._socket._peername.address + ":" + clientConn._socket._peername.port);
     });
     
     if (args[1] == "peers") {
@@ -152,7 +152,7 @@ function close(args, manager) {
     }
 }
 
-// SEND command 
+// send command 
 // send a message from all clients to the server they are connected to 
 // Note, when parsing the message, everything after the <source> will be part of the message, and all
 // whitespace will be replaced by a space

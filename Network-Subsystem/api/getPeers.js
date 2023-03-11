@@ -1,10 +1,10 @@
 // File: getPeers.js
 // Author: Julian Fisher
-// Date: 3/5/2023
-// Description: Define a function that will return the number of peers for a socket
+// Date: 3/7/2023
+// Description: Define a function that will return the peers for a socket
 // server and a client manager
 
-function getNumPeers(sockServer, clientManager, source="all") {
+function getPeers(sockServer, clientManager, source="all") {
     let clientList = []
     if (clientManager.getNumClients() != 0){
         clientManager.getClientURLs().forEach(client => {
@@ -17,13 +17,12 @@ function getNumPeers(sockServer, clientManager, source="all") {
         serverList.push(clientConn._socket.server._connectionKey);
     });
 
-    numClients = clientList.length;
-    numServer = serverList.length;
+
     return({
-        'numServerConnections': numServer,
-        'numlientConnections': numClients,
-        'total': numClients + numServer
-    })
+        'serverConnections': serverList,
+        'clientConnections': clientList,
+        'all': serverList.concat(clientList)
+    });
 }
 
-module.exports = getNumPeers;
+module.exports = getPeers;
