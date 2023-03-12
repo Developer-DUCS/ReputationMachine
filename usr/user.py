@@ -7,14 +7,17 @@
 import uuid
 import os.path
 import json
+from keychain import keychain
 
 class user:
         
     def __init__(self, username):
         self.obj_id = uuid.uuid4().hex
         self.usrn = username
+        self.file_loc = path=os.getcwd()
         self.file_name = '/usr/' + self.usrn + '.json'
-        self.file_loc = path=os.getcwd() + self.file_name
+        self.state_file_loc = self.file_loc + self.file_name
+        self.my_keychain = keychain(username)
         
     def get_user(self):
         return self.usrn
@@ -30,5 +33,18 @@ class user:
             "name": self.usrn,
             "uuid": self.obj_id
         }
-        with open(self.file_loc, "w") as outfile:
+        with open(self.state_file_loc, "w") as outfile:
             json.dump(temp_f, outfile)
+            
+    def sign_rep_mach(self, msg):
+        signature = self.my_keychain.sign_rep_mach(msg)
+        return signature
+        
+    def get_blockchain_wallet(self):
+        return self.my_keychain.get_blockchain_wallet()
+        
+    def sign_rep_mach(msg):
+        return keychain.sign_rep_mach(msg)
+        
+        
+    
