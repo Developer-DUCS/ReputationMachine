@@ -14,10 +14,76 @@ sys.path.insert(0, file_loc+'/blockchain')
 from blockchain import blockchain
 import argparse
 import signal
+from flask import Flask, request
+from bson import json_util
+from hashlib import sha256
+
 import json
 import queue
 from getpass import getpass
 from getpass import getuser
+
+app = Flask('3ap')
+
+#======================================
+  # 3AP Routes
+#======================================
+@app.route('/saveReceipt', methods=['POST'])
+def saveReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    
+    #TODO: implement a check to see if the receipt received from the network exist on the blockchain
+    #only a TODO if we want to check every receipt that comes in from the network
+    dbManager.addReceiptsToDB(request.json)
+    
+    return json_util.dumps(request.json)
+
+@app.route('/createReceipt', methods=['POST'])
+def createReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    
+    if type(request.json) == list:
+        validReceipts = []
+        for receipt in request.json:
+            temp = addHashToReceipt(receipt)
+            validReceipts.append(temp)
+        dbManager.addReceiptsToDB(validReceipts)
+        return json_util.dumps(validReceipts)
+    else:
+        result = addHashToReceipt(request.json)
+        dbManager.addReceiptsToDB(result)
+        #TODO: pass the receipt to the blockchain for embeding
+        return json_util.dumps(result)
+        
+def addHashToReceipt(data):
+    stableJSON = json.dumps(data, sort_keys=True)
+    receiptHash = sha256(stableJSON.encode('utf-8')).hexdigest()
+    res = json.loads(stableJSON)
+    res["_id"] = receiptHash
+    res["status"] = "pending"
+    return res
+
+@app.route('/getReceipts', methods=['POST'])
+def getReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    receipts = dbManager.getReceiptsFromDB(request.json, True)
+    #TODO: pass a request for the given id to the network and get the receipts from the network
+    return json.dumps(receipts)
+
+@app.route('/embedStatus', methods=['POST'])
+def embedStatus():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    status = dbManager.getStatus(request.json)
+    return status
+
+@app.route('/updateReceipts', methods=['POST'])
+def updateReceipts():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    dbManager.updateReceipts(request.json)
+    return "Updated Receipts"
+
+#======================================
+
 
 def _sigint_handler_(signum, frame):
     # Handle ^c
@@ -28,7 +94,14 @@ def _sigterm_handler_(signum, frame):
     # Handle shell kill
     print(" -Got SIGTERM-")
     sys.exit(1) # - Exexution terminated from outside
-        
+    
+def start(user_obj):
+    print("made it")
+    global dbManager 
+    dbManager = user_obj.get_db()
+    print(user_obj)
+    app.run(host='127.0.0.1', port=3030)
+
 def get_transaction(txid, blkchain):
     result = blkchain.get_tx(txid)
     pretty_rslt = json.dumps(result, indent=2)
@@ -54,7 +127,7 @@ def get_password(username):
         get_password(username)
     return password
 
-def main():
+def setup():
     passwd = ""
     # Sort out the command line options.
     parser = argparse.ArgumentParser()
@@ -66,6 +139,9 @@ def main():
     parser.add_argument("-gb", "--get_balance", help=help_str_gb, action="store_true")
     help_str_gb = "get the testnet btc recieve address"
     parser.add_argument("-gra", "--get_recieve_address", help=help_str_gb, action="store_true")
+    help_str_start = "start the reputable entity service"
+    parser.add_argument("-s", "--start", help=help_str_gb, action="store_true")
+    
     args = parser.parse_args()
     
     #define arg variables
@@ -73,6 +149,7 @@ def main():
     user_add = args.user_add
     get_balance = args.get_balance
     get_address = args.get_recieve_address
+    start_flg = args.start
     
     #variables
     active_user = ""
@@ -136,30 +213,14 @@ def main():
         sys.exit(0)
     
     #instantiate other subsystems
+    if start_flg:
+        print("starting the reputable entity service")
+        start(user_obj)
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c
+    signal.signal(signal.SIGTERM, _sigterm_handler_) # Create handler for shell kill
+    setup()
     
-    #build argparse queue
-    q = queue.Queue()
-    if get_tx != "":
-        gtx_tup = ("get_tx", get_tx)
-        q.put(gtx_tup)
-    elif get_balance:
-        q.put("get_balance", "")
-    elif get_address:
-        q.put("get_recieve_address", "")
-        
-    #process argparse queue
-    q_size = q.qsize()
-    if q_size > 0:
-        for i in range(q_size):
-            action = q.get()
-            print(str(action))
-            if(action[0] == "get_tx"):
-                get_transaction(action[1], blkchain)
-            elif(action == "get_balance"):
-                get_balance_btc(blkchain)
-            elif(action == "get_recieve_address"):
-                get_recieve_address(blkchain)
-signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c
-signal.signal(signal.SIGTERM, _sigterm_handler_) # Create handler for shell kill
-main()
-sys.exit(0)
+    
+    

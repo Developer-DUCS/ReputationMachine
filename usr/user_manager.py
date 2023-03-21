@@ -21,6 +21,9 @@ class user_manager:
         self.pwflag = False
         self.shadow = None
         
+    def get_db(self):
+        return self.active_user.get_db()
+        
     def get_wallet(self):
         #make sure password auth done and login is complete
         if ((self.pwflag) and (self.active_user != None)):
@@ -28,8 +31,8 @@ class user_manager:
             
     def sign_rep_receipt(self, msg):
         #make sure password auth done and login is complete
-        if ((self.pwflag) and (self.active_user != None)):
-            return self.active_user.sign_rep_mach(msg)
+        if ((self.pwflag) and (active_user != None)):
+            return active_user.sign_rep_mach(msg)
         
     def create_salt(self, pwd):
         salt = bcrypt.gensalt()

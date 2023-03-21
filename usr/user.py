@@ -8,6 +8,8 @@ import uuid
 import os.path
 import json
 from keychain import keychain
+from database_manager import DatabaseManager
+import pymongo
 
 class user:
         
@@ -18,7 +20,14 @@ class user:
         self.file_name = '/usr/' + self.usrn + '.json'
         self.state_file_loc = self.file_loc + self.file_name
         self.my_keychain = keychain(username)
-        
+        client = "mongodb://localhost:27017/"
+        db = "receiptDP"
+        collection = "receipts"
+        self.dbManager = self.create_database(client, db, collection)
+    
+    def get_db(self):
+        return self.dbManager
+    
     def get_user(self):
         return self.usrn
         
@@ -46,5 +55,24 @@ class user:
     def sign_rep_mach(msg):
         return keychain.sign_rep_mach(msg)
         
+    #==============================================
+        #Database functions
+    #==============================================
+    
+    def create_database(self, client, db, collection):
+        client = pymongo.MongoClient(client)
+        db = client[db]
+        collection = db[collection]
+    
+        dbManager = DatabaseManager(client, db, collection)
+        dbManager.createMongoDB({"init": "db"})
+        return dbManager
+        
+    def load_database(self, client, db, collection):
+        client = pymongo.MongoClient(client)
+        db = client[db]
+        collection = db[collection]
+    
+        dbManager = DatabaseManager(client, db, collection)
         
     
