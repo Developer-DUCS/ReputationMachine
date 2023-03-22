@@ -21,7 +21,7 @@ class user:
         self.state_file_loc = self.file_loc + self.file_name
         self.my_keychain = keychain(username)
         client = "mongodb://localhost:27017/"
-        db = "receiptDP"
+        db = "receiptDB"
         collection = "receipts"
         self.dbManager = self.create_database(client, db, collection)
     

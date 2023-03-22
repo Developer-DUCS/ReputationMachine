@@ -96,7 +96,6 @@ def _sigterm_handler_(signum, frame):
     sys.exit(1) # - Exexution terminated from outside
     
 def start(user_obj):
-    print("made it")
     global dbManager 
     dbManager = user_obj.get_db()
     print(user_obj)
