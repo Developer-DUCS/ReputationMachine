@@ -17,8 +17,19 @@ class user_manager:
         self.file_loc = path=os.getcwd()
         self.shadow_file_loc = self.file_loc + "/007/shadow.json"
         self.config_file_loc = self.file_loc + "/007/re_cfg.json"
+        self.state_file_location = None
         self.pwflag = False
         self.shadow = None
+        
+    def get_wallet(self):
+        #make sure password auth done and login is complete
+        if ((self.pwflag) and (self.active_user != None)):
+            return self.active_user.get_blockchain_wallet()
+            
+    def sign_rep_receipt(self, msg):
+        #make sure password auth done and login is complete
+        if ((self.pwflag) and (self.active_user != None)):
+            return self.active_user.sign_rep_mach(msg)
         
     def create_salt(self, pwd):
         salt = bcrypt.gensalt()
@@ -33,22 +44,18 @@ class user_manager:
     def salt_and_hash_passwd(self, pwd):
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(pwd, salt)
-        print(salt)
-        print(hashed)
         
     def check_passwd(self, pwd):
-        salt = self.salt
-        print("salt: " + str(salt))
         hashed = self.shadow
         if bcrypt.checkpw(pwd.encode('utf8'), hashed.encode('utf8')):
             self.pwflag = True
 
     def load_user(self, usr, pwd):
         filen = "/usr/" + usr + ".json"
-        state_file_location = self.file_loc + filen
-        if os.path.isfile(state_file_location):
+        self.state_file_location = self.file_loc + filen
+        if os.path.isfile(self.state_file_location):
             #open user state file
-            f = open(state_file_location)
+            f = open(self.state_file_location)
             data = json.load(f)
             f.close()
             #instantiate user
@@ -61,7 +68,6 @@ class user_manager:
             f = open(self.config_file_loc)
             config = json.load(f)
             f.close()
-            self.salt = config['salt']
             #load shadow file
             f = open(self.shadow_file_loc)
             shadow_config = json.load(f)
@@ -84,10 +90,8 @@ class user_manager:
     def save_user(self):
         self.active_user.save()
         
-    def crte_user(self, user, passwd):
-        conf_flag = False
-        print("Adding user to re_cfg.json")
-         #Does config file contain valid json
+    def create_config(self, user, passwd):
+        #create and handle errors around the general config file
         f = open(self.config_file_loc, "w+")
         try:
             config = json.load(f)
@@ -98,26 +102,44 @@ class user_manager:
             config = {"user": user}
         else:
             config.update({"user":user})
-        print("Handling password security.")
-        #add salt to config
-        slt = self.create_salt(passwd) 
-        config.update({"salt":str(slt)})
-        #f = open(self.config_file_loc, "w+")
         f.write(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
+        
+    def create_shadow(self, usr, passwd):
+        #create and handle errors around the shadow file
         #add hash to shadow file
+        slt = self.create_salt(passwd) 
         hashed = self.create_hash(passwd, slt)
         f = open(self.shadow_file_loc, "w+")
         try:
             shadow_config = json.load(f)
         except json.decoder.JSONDecodeError:
             shadow_config = {}
-        shadow_config.update({user:str(hashed)})    
+        shadow_config.update({usr:str(hashed)})    
         f.write(json.dumps(shadow_config, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
         
-        print("Create a saved state for the new user.")
-        #try:
-            #slt = config['salt']
-        #except KeyError:
+    def create_state_file(self, usr):
+    #create and handle errors around the users state file
+        #save a state file for this user
+        filen = "/usr/" + usr + ".json"
+        self.state_file_location = self.file_loc + filen
+        f = open(self.state_file_location, "w+")
+        try:
+            user_state = json.load(f)
+        except json.decoder.JSONDecodeError:
+            initial_key_pairs = {"user": self.active_user.get_user(),"uuid": self.active_user.get_uuid()}
+            f.write(json.dumps(initial_key_pairs, sort_keys=True, indent=4, separators=(',', ': ')))
+        f.close()
+        active_user = None
+        
+    def crte_user(self, usr, passwd):
+        conf_flag = False
+        #instantiate user
+        self.active_user = user(usr)
+        #Does config file contain valid json
+        self.create_config(usr, passwd)
+        self.create_shadow(usr, passwd)
+        self.create_state_file(usr)
+        self.pwflag = True
             
