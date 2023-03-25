@@ -31,7 +31,7 @@ const cacheMaxSize = parseInt(config.ServerConfig.CacheMaxSize);
 const msgPrctSave = parseInt(config.MessageConfig.PercentReceiptsSave);
 const TTL = parseInt(config.MessageConfig.DefaultTTL);
 
-let connMan = new ConnectionHandler(cacheRetentionTime,cacheMaxSize,cacheRetentionTime,cacheMaxSize, wsPort, msgPrctSave);
+let connMan = new ConnectionHandler(cacheRetentionTime, cacheMaxSize, wsPort, msgPrctSave);
 console.log("WebSocket server listening on port", wsPort);
 
 initCommandLine(connMan.clientManager,connMan.sockServ,config);
