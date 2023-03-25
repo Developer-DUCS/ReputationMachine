@@ -29,11 +29,12 @@ class ConnectionManager {
     * @param {number} maxNumReceiptsRetained - The maximum amount of time to hold reputation receipts in the cache, in milliseconds
     * @param {number} savePercent - The percentage of receipts to save as messages come through
     */
-    constructor(messageRetentionTime, maxNumMessagesRetained, maxReceiptRetentionTime, maxNumReceiptsRetained, port, savePercent) {
+    constructor(messageRetentionTime, maxNumMessagesRetained, port, savePercent) {
         this.messageCache = new Cache(messageRetentionTime, maxNumMessagesRetained);
         this.sockServ = WsServer(port, this);
         this.clientManager = new ClientManager(this);
         this.prctSave = savePercent;
+        this.pendingReqs = [];
     }
 
     handleMessage(message, messageSource) {
@@ -74,8 +75,8 @@ class ConnectionManager {
         if (jsonMessage.Header.MsgType === 'ShareReceipt') {
             this.shareReceipt(jsonMessage,messageSource);
         }
-        else if (jsonMessage.Header.MsgType === 'ReceiveReceipt') {
-            receiveReceipt(jsonMessage);
+        else if (jsonMessage.Header.MsgType === 'RequestReceipt') {
+            requestReceipt(jsonMessage, msgID, messageSource);
         }
         return;
     }
@@ -87,17 +88,37 @@ class ConnectionManager {
         if (Math.random() * 100 <= this.prctSave) {
             // TODO:
             // SAVE TO DB
-            console.log("Saving to DB")
+            console.log("Saving to DB");
         }
         this.sendAllExcept(jsonMessage,msgSrc);
         return;
     }
 
-    #requestReceipt(jsonMessage) {
-        // Search local db for matches
-        // Send response if rcpts are found
-        // Forward req to other neighbors
+    async requestReceipt(jsonMessage, msgID, msgSrc) {
+        // check if req ID is pending, if so, do not process the request
+        if (this.pendingReqs.includes(msgID)){
+            return;
+        }
+        
+        // TO DO:
+        // Make db req API call 
+        found = []
+
+        if (found.length > 0){
+            resMessage = {
+                Header: {
+                    MsgType: "RequestResponse",
+                    TTL: 10,
+                    MsgID: 
+                }
+            }
+        }
+        
+        this.sendAllExcept(jsonMessage,msgSrc);
+
+        //      Send response if rcpts are found
         console.log('ReceiveReceipt');
+        this.sendAllExcept(jsonMessage,msgSrc);
     }
 
     // share receipt with all peers except for the excepted URL
@@ -115,6 +136,18 @@ class ConnectionManager {
             if (client != except){
                 client.send(messageBuff);
             }
+        })
+    }
+
+    // send a message to all other neighbors
+    sendAll(msg) {
+        let messageBuff = Buffer.from(JSON.stringify(msg));
+        // repeat message to other neighbors
+        this.sockServ.clients.forEach(client => {
+            client.send(messageBuff);
+        });
+        this.clientManager.sockets.forEach(client => {
+            client.send(messageBuff);
         })
     }
 
