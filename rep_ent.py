@@ -112,6 +112,21 @@ def get_balance_btc(blkchain):
 def get_recieve_address(blkchain):
     blkchain.get_recieve_address()
     
+def verify_file_struct():
+    pwd = path=os.getcwd()
+    secret = pwd + "/007/"
+    keys = secret + "keys/"
+    blockchain = keys + "blockchain/"
+    rep_mach = keys + "rep_mach/"
+    if not os.path.isdir(secret):
+        os.mkdir(secret)
+    if not os.path.isdir(keys):
+        os.mkdir(keys)
+    if not os.path.isdir(blockchain):
+        os.mkdir(blockchain)
+    if not os.path.isdir(rep_mach):
+        os.mkdir(rep_mach)
+    
 def get_password(username):
     print("Please specify a password for this user: ")
     password = getpass()
@@ -159,6 +174,8 @@ def setup():
     try:
         f = open('./007/re_cfg.json')
     except FileNotFoundError:
+        #verify and create file struct for 007
+        verify_file_struct()
         f = open('./007/re_cfg.json', "w+")
         config = {}
         f.write(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -215,6 +232,10 @@ def setup():
     if start_flg:
         print("starting the reputable entity service")
         start(user_obj)
+    elif get_balance:
+        get_balance_btc(blkchain)
+    elif get_address:
+        get_recieve_address(blkchain)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c
