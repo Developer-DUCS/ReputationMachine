@@ -28,7 +28,6 @@ class keychain:
         self.rep_mach_key_file_loc = self.file_loc + self.rep_mach_key_path
         self.load_blockchain_keys()
         self.load_rep_mach_key_pair()
-        #self.sign_rep_mach("If I had a hammer, Id hammer in the morning.")
         
     def create_rep_mach_key_pair(self):
         self.rep_mach_prikey = ECC.generate(curve='P-256')
@@ -74,7 +73,7 @@ class keychain:
             f.write(self.rep_mach_prikey.export_key(format='PEM'))
             f.close()
             
-    def sign_rep_mach(self, msg):
+    def sign_rep_mach_rec(self, msg):
         msg = msg.encode("utf8")
         msg_hash = SHA256.new(msg)
         ds = DSS.new(self.rep_mach_prikey, 'fips-186-3')
