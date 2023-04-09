@@ -32,7 +32,8 @@ class user_manager:
     def sign_rep_receipt(self, msg):
         #make sure password auth done and login is complete
         if ((self.pwflag) and (self.active_user != None)):
-            return self.active_user.sign_rep_mach(msg)
+            sign = self.active_user.sign_rep_mach(msg)
+            return sign
         
     def create_salt(self, pwd):
         salt = bcrypt.gensalt()
@@ -94,6 +95,7 @@ class user_manager:
         self.active_user.save()
         
     def create_config(self, user, passwd):
+        print("create config enter")
         #create and handle errors around the general config file
         f = open(self.config_file_loc, "w+")
         try:
@@ -102,9 +104,21 @@ class user_manager:
             conf_flag = True
         #add user to cfg
         if conf_flag == True:
-            config = {"user": user}
+            print("creating main config")
+            config = {
+                "user": user,
+                "client": "mongodb://localhost:27017/",
+                "db": "receiptDB",
+                "collection": "receipts"
+            }
         else:
-            config.update({"user":user})
+            print("making config.update")
+            config.update({
+                "user": user,
+                "client": "mongodb://localhost:27017/",
+                "db": "receiptDB",
+                "collection": "receipts"
+            })
         f.write(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
         

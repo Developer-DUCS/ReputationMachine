@@ -6,6 +6,7 @@
 
 import uuid
 import os.path
+import sys
 import json
 from keychain import keychain
 from database_manager import DatabaseManager
@@ -20,11 +21,31 @@ class user:
         self.file_name = '/usr/' + self.usrn + '.json'
         self.state_file_loc = self.file_loc + self.file_name
         self.my_keychain = keychain(username)
-        client = "mongodb://localhost:27017/"
-        db = "receiptDB"
-        collection = "receipts"
-        self.dbManager = self.create_database(client, db, collection)
-    
+        self.config = None
+        self.load_config()
+        self.client = "mongodb://localhost:27017/"
+        self.db = "receiptDB"
+        self.collection = "receipts"
+        self.dbManager = self.create_database(self.client, self.db, self.collection)
+        
+    def load_config(self):
+        try:
+            f = open('./007/re_cfg.json')
+        except FileNotFoundError:
+            print("Configuration file not found.")
+            sys.exit(6)
+        self.config = json.load(f)
+        f.close()
+        try:
+            self.client = self.config['client']
+            self.db = self.config['db']
+            self.collection = self.config['collection']
+        except KeyError:
+            print("No database configuration found. Loading defaults...")
+            self.client = "mongodb://localhost:27017/"
+            self.db = "db" "receiptDB"
+            self.collection = "receipts"
+             
     def get_db(self):
         return self.dbManager
     
@@ -46,14 +67,11 @@ class user:
             json.dump(temp_f, outfile)
             
     def sign_rep_mach(self, msg):
-        signature = self.my_keychain.sign_rep_mach(msg)
+        signature = self.my_keychain.sign_rep_mach_rec(msg)
         return signature
         
     def get_blockchain_wallet(self):
         return self.my_keychain.get_blockchain_wallet()
-        
-    def sign_rep_mach(msg):
-        return keychain.sign_rep_mach(msg)
         
     #==============================================
         #Database functions

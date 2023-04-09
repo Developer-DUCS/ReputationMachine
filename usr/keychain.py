@@ -73,7 +73,7 @@ class keychain:
             f.write(self.rep_mach_prikey.export_key(format='PEM'))
             f.close()
             
-    def sign_rep_mach(self, msg):
+    def sign_rep_mach_rec(self, msg):
         msg = msg.encode("utf8")
         msg_hash = SHA256.new(msg)
         ds = DSS.new(self.rep_mach_prikey, 'fips-186-3')

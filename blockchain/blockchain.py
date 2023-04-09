@@ -18,12 +18,10 @@ class blockchain:
         self.server = "http://13.59.161.209:80"
         self.get_tx_route = "/getrawtransaction/"
         self.my_wallet = None
+        self.tx_amnt = 1
     
     def load_wallet(self, wif):
         self.my_wallet = PrivateKeyTestnet(wif)
-        
-    def embed_fingerprint(self, fingerprint):
-        print("Embed Fingerprint")
         
     def get_balance_btc(self):
         print("===============================")
@@ -36,6 +34,10 @@ class blockchain:
         print("===============================")
         print("My Recieve Address: " + self.my_wallet.address)
         print("===============================")
+        
+    def embed_fingerprint(self, fp):
+        tx_hash = self.my_wallet.send([('n15D7cyxEY5gp738g3DpzYPbHF6ZFsGxRG', self.tx_amnt, 'usd')],message=fp)
+        return tx_hash
         
     def get_tx(self, txid):
         self.secureRPC_call = self.server + self.get_tx_route + txid
@@ -67,6 +69,7 @@ class blockchain:
         return self.reconstruct_op_return(script)
         
     def validate_fp_in_txid(self, txid, fingerprint):
+        #fingerprint must be in hex
         data = self.find_op_return(txid)
         conf = self.get_confirmations(txid)
         if data == fingerprint and conf > 6:
