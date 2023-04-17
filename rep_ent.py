@@ -9,7 +9,8 @@ import os
 import sys
 file_loc = path=os.getcwd()
 sys.path.insert(0, file_loc+'/usr')
-from user_manager import user_manager
+# from user_manager import user_manager
+from usr.user_manager import user_manager
 sys.path.insert(0, file_loc+'/blockchain')
 from blockchain import blockchain
 import argparse
@@ -27,12 +28,17 @@ app = Flask('3ap')
 #======================================
   # 3AP Routes
 #======================================
+
+@app.route('/verifyReceipt', methods=['POST'])
+def verifyReceipt():
+    #TODO: pass a fingerprint to the blockchain to verify its existence
+
+    return request.json
+
 @app.route('/saveReceipt', methods=['POST'])
 def saveReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     
-    #TODO: implement a check to see if the receipt received from the network exist on the blockchain
-    #only a TODO if we want to check every receipt that comes in from the network
     dbManager.addReceiptsToDB(request.json)
     
     return json_util.dumps(request.json)
@@ -44,20 +50,29 @@ def createReceipt():
     if type(request.json) == list:
         validReceipts = []
         for receipt in request.json:
-            temp = addHashToReceipt(receipt)
+            info = embed_fingerprint(user, blockchain, receipt)
+            txid = info[0]
+            fp = info[1]
+            temp = addDetailsToReceipt(receipt, fp, txid)
             validReceipts.append(temp)
         dbManager.addReceiptsToDB(validReceipts)
+
         return json_util.dumps(validReceipts)
     else:
-        result = addHashToReceipt(request.json)
+        info = embed_fingerprint(user, blockchain, request.json)
+        txid = info[0]
+        fp = info[1]
+        result = addDetailsToReceipt(request.json, fp, txid)
         dbManager.addReceiptsToDB(result)
-        #TODO: pass the receipt to the blockchain for embeding
+
         return json_util.dumps(result)
         
-def addHashToReceipt(data):
+def addDetailsToReceipt(data, fp, txid):
     stableJSON = json.dumps(data, sort_keys=True)
     receiptHash = sha256(stableJSON.encode('utf-8')).hexdigest()
     res = json.loads(stableJSON)
+    res["txid"] = txid
+    res["fingerprint"] = fp
     res["_id"] = receiptHash
     res["status"] = "pending"
     return res
@@ -67,6 +82,12 @@ def getReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     receipts = dbManager.getReceiptsFromDB(request.json, True)
     #TODO: pass a request for the given id to the network and get the receipts from the network
+    return json.dumps(receipts)
+
+@app.route('/retrReceipts', methods=['POST'])
+def retrReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    receipts = dbManager.getReceiptsFromDB(request.json, False)
     return json.dumps(receipts)
 
 @app.route('/embedStatus', methods=['POST'])
@@ -79,6 +100,7 @@ def embedStatus():
 def updateReceipts():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     dbManager.updateReceipts(request.json)
+    #TODO: propagate receipts through network
     return "Updated Receipts"
 
 #======================================
@@ -110,10 +132,15 @@ def embed_fingerprint(user_obj, blkchain, fp):
   # User Functions
 #======================================
 
-def start(user_obj):
+def start(user_obj, blockchain_obj):
+    global user
+    global blockchain
     global dbManager 
+
+    user = user_obj
+    blockchain = blockchain_obj
     dbManager = user_obj.get_db()
-    print(user_obj)
+
     app.run(host='127.0.0.1', port=3030)
 
 def verify_file_struct():
@@ -256,20 +283,21 @@ def setup():
         user_obj.crte_user(active_user, passwd)
     login_flg = user_obj.load_user(active_user, passwd)
     if login_flg == True:
+
         active_usr = user_obj.get_active_user()
         user_obj.save_user()
         blkchain = blockchain()
         blkchain.load_wallet(user_obj.get_wallet())
+
+        if start_flg:
+            print("starting the reputable entity service")
+            start(user_obj, blkchain)
         
     else:
         print("User not found. Please try again.")
         sys.exit(0)
-    
     #instantiate other subsystems
-    if start_flg:
-        print("starting the reputable entity service")
-        start(user_obj)
-    elif get_balance:
+    if get_balance:
         get_balance_btc(blkchain)
     elif get_address:
         get_recieve_address(blkchain)
