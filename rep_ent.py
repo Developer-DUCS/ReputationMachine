@@ -14,32 +14,123 @@ sys.path.insert(0, file_loc+'/blockchain')
 from blockchain import blockchain
 import argparse
 import signal
+from flask import Flask, request
+from bson import json_util
+from hashlib import sha256
 import json
 import queue
 from getpass import getpass
 from getpass import getuser
 
-def _sigint_handler_(signum, frame):
-    # Handle ^c
-    print(" -Got SIGINT-")
-    sys.exit(1) # - Exexution terminated from outside
-        
-def _sigterm_handler_(signum, frame):
-    # Handle shell kill
-    print(" -Got SIGTERM-")
-    sys.exit(1) # - Exexution terminated from outside
-        
-def get_transaction(txid, blkchain):
-    result = blkchain.get_tx(txid)
-    pretty_rslt = json.dumps(result, indent=2)
-    print(pretty_rslt)
+app = Flask('3ap')
+
+#======================================
+  # 3AP Routes
+#======================================
+@app.route('/saveReceipt', methods=['POST'])
+def saveReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     
+    #TODO: implement a check to see if the receipt received from the network exist on the blockchain
+    #only a TODO if we want to check every receipt that comes in from the network
+    dbManager.addReceiptsToDB(request.json)
+    
+    return json_util.dumps(request.json)
+
+@app.route('/createReceipt', methods=['POST'])
+def createReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    
+    if type(request.json) == list:
+        validReceipts = []
+        for receipt in request.json:
+            temp = addHashToReceipt(receipt)
+            validReceipts.append(temp)
+        dbManager.addReceiptsToDB(validReceipts)
+        return json_util.dumps(validReceipts)
+    else:
+        result = addHashToReceipt(request.json)
+        dbManager.addReceiptsToDB(result)
+        #TODO: pass the receipt to the blockchain for embeding
+        return json_util.dumps(result)
+        
+def addHashToReceipt(data):
+    stableJSON = json.dumps(data, sort_keys=True)
+    receiptHash = sha256(stableJSON.encode('utf-8')).hexdigest()
+    res = json.loads(stableJSON)
+    res["_id"] = receiptHash
+    res["status"] = "pending"
+    return res
+
+@app.route('/getReceipts', methods=['POST'])
+def getReceipt():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    receipts = dbManager.getReceiptsFromDB(request.json, True)
+    #TODO: pass a request for the given id to the network and get the receipts from the network
+    return json.dumps(receipts)
+
+@app.route('/embedStatus', methods=['POST'])
+def embedStatus():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    status = dbManager.getStatus(request.json)
+    return status
+
+@app.route('/updateReceipts', methods=['POST'])
+def updateReceipts():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    dbManager.updateReceipts(request.json)
+    return "Updated Receipts"
+
+#======================================
+  # Blockchain Functions
+#======================================
+
 def get_balance_btc(blkchain):
     blkchain.get_balance_btc()
     
 def get_recieve_address(blkchain):
     blkchain.get_recieve_address()
+
+def get_transaction(txid, blkchain):
+    result = blkchain.get_tx(txid)
+    pretty_rslt = json.dumps(result, indent=2)
+    print(pretty_rslt)
     
+def verify_receipt(blkchain, txid, fingerprint):
+    rslt = blkchain.validate_fp_in_txid(txid, fingerprint)
+    print("This fingerprint is in the transaction: ", rslt)
+        
+def embed_fingerprint(user_obj, blkchain, fp):
+    sign = user_obj.sign_rep_receipt(fp)
+    tx_hash = blkchain.embed_fingerprint(sign.hex())
+    receipt_info = (tx_hash, sign)
+    return receipt_info
+
+#======================================
+  # User Functions
+#======================================
+
+def start(user_obj):
+    global dbManager 
+    dbManager = user_obj.get_db()
+    print(user_obj)
+    app.run(host='127.0.0.1', port=3030)
+
+def verify_file_struct():
+    pwd = path=os.getcwd()
+    secret = pwd + "/007/"
+    keys = secret + "keys/"
+    blockchain = keys + "blockchain/"
+    rep_mach = keys + "rep_mach/"
+    if not os.path.isdir(secret):
+        os.mkdir(secret)
+    if not os.path.isdir(keys):
+        os.mkdir(keys)
+    if not os.path.isdir(blockchain):
+        os.mkdir(blockchain)
+    if not os.path.isdir(rep_mach):
+        os.mkdir(rep_mach)
+        
 def get_password(username):
     print("Please specify a password for this user: ")
     password = getpass()
@@ -52,27 +143,64 @@ def get_password(username):
         #passwords do not match
         print("The passwords do not match. Please try again")
         get_password(username)
-    return password
+    return password        
+        
+#======================================
+  # Genearal Helper Functions
+#======================================
 
-def main():
+def _sigint_handler_(signum, frame):
+    # Handle ^c
+    print(" -Got SIGINT-")
+    sys.exit(1) # - Exexution terminated from outside
+        
+def _sigterm_handler_(signum, frame):
+    # Handle shell kill
+    print(" -Got SIGTERM-")
+    sys.exit(1) # - Exexution terminated from outside
+    
+def sig_to_hex(sign):
+    #send an ECDSA signature encoded in a bytes object
+    # and reutrn the hexadecimal representation of it.
+    hexa = ""
+    for char in sign.hex():
+        hexa += format(ord(char), "x")
+    return hexa
+    
+#======================================
+  # Main
+#======================================
+
+def setup():
     passwd = ""
     # Sort out the command line options.
     parser = argparse.ArgumentParser()
-    help_str_ua = "add a new user"
-    parser.add_argument("-ua", "--user_add", help=help_str_ua, type=str, default="")
+    help_str_embed = "add a new user"
+    parser.add_argument("-er", "--embed_receipt", help=help_str_embed, type=str, default="")
     help_str_gtx = "retreive a bitcoin testnet transaction"
     parser.add_argument("-gtx", "--get_tx", help=help_str_gtx, type=str, default="")
+    help_str_tx = "provide a txid for verification"
+    parser.add_argument("-tx", "--tx", help=help_str_tx, type=str, default="")
+    help_str_fp = "provide a fingerprint for verification"
+    parser.add_argument("-fp", "--fp", help=help_str_fp, type=str, default="")
     help_str_gb = "retreive the testnet bitcoin wallet balance in btc and usd"
     parser.add_argument("-gb", "--get_balance", help=help_str_gb, action="store_true")
     help_str_gb = "get the testnet btc recieve address"
     parser.add_argument("-gra", "--get_recieve_address", help=help_str_gb, action="store_true")
+    help_str_start = "start the reputable entity service"
+    parser.add_argument("-s", "--start", help=help_str_gb, action="store_true")
+    
     args = parser.parse_args()
     
     #define arg variables
     get_tx = args.get_tx
-    user_add = args.user_add
+    #user_add = args.user_add
     get_balance = args.get_balance
     get_address = args.get_recieve_address
+    start_flg = args.start
+    embed = args.embed_receipt
+    finger = args.fp
+    tx = args.tx
     
     #variables
     active_user = ""
@@ -83,6 +211,8 @@ def main():
     try:
         f = open('./007/re_cfg.json')
     except FileNotFoundError:
+        #verify and create file struct for 007
+        verify_file_struct()
         f = open('./007/re_cfg.json', "w+")
         config = {}
         f.write(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -136,30 +266,46 @@ def main():
         sys.exit(0)
     
     #instantiate other subsystems
-    
-    #build argparse queue
-    q = queue.Queue()
-    if get_tx != "":
-        gtx_tup = ("get_tx", get_tx)
-        q.put(gtx_tup)
+    if start_flg:
+        print("starting the reputable entity service")
+        start(user_obj)
     elif get_balance:
-        q.put("get_balance", "")
+        get_balance_btc(blkchain)
     elif get_address:
-        q.put("get_recieve_address", "")
+        get_recieve_address(blkchain)
+    elif embed:
+        #determine if information was passed as relative file path or not
+        eh_flg = False
+        if not os.path.isfile(embed):
+            eh_flag = True
+            pwd = path=os.getcwd()
+            eh_embed = pwd + "/" + embed
+            if not os.path.isfile(eh_embed):
+                print("Please input the receipt as a filepath to the receipt input.")
+                sys.exit(5)
+        if eh_flg:
+            embed = eh_embed
+        #read the receipt from the file
+        f = open(embed)
+        test_receipt = json.load(f)
+        f.close()
+        test_receipt = str(test_receipt)
+        #embed the fingerprint in the blockchain and return the txid and signature
+        sig_id = embed_fingerprint(user_obj, blkchain, test_receipt)
+        txid = sig_id[0]
+        fingerprint = sig_id[1]
+        print("txid", txid)
+        print("fingerprint", sig_to_hex(fingerprint))
+            
+    elif get_tx:
+        print(get_transaction(get_tx, blkchain))
+    elif finger and tx:
+        verify_receipt(blkchain, tx, finger)
         
-    #process argparse queue
-    q_size = q.qsize()
-    if q_size > 0:
-        for i in range(q_size):
-            action = q.get()
-            print(str(action))
-            if(action[0] == "get_tx"):
-                get_transaction(action[1], blkchain)
-            elif(action == "get_balance"):
-                get_balance_btc(blkchain)
-            elif(action == "get_recieve_address"):
-                get_recieve_address(blkchain)
-signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c
-signal.signal(signal.SIGTERM, _sigterm_handler_) # Create handler for shell kill
-main()
-sys.exit(0)
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c
+    signal.signal(signal.SIGTERM, _sigterm_handler_) # Create handler for shell kill
+    setup()
+    
+    
+    

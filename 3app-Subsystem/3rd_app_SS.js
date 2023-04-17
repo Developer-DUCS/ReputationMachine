@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // will eventually compose of checking to see if the source is a valid public key
 function validSource(source) {
-    if (typeof source.id == 'string' && source.id.length === KEY_LENGTH && source.id.substring(0, CHECK_LENGTH) === KEY_CHECK) {
+    if (typeof source == 'string' && source.length === KEY_LENGTH && source.substring(0, CHECK_LENGTH) === KEY_CHECK) {
         return true;
     }
     else {
@@ -26,7 +26,7 @@ function validSource(source) {
 
 // will eventually compose of checking to see if the target is a valid public key
 function validTarget(target) {
-    if (typeof target.id == 'string' && target.id.length === KEY_LENGTH && target.id.substring(0, CHECK_LENGTH) === KEY_CHECK) {
+    if (typeof target == 'string' && target.length === KEY_LENGTH && target.substring(0, CHECK_LENGTH) === KEY_CHECK) {
         return true;
     }
     else {
@@ -106,7 +106,7 @@ function validHash(hashObject) {
 }
 
 async function fetchRoute(args, route) {
-    let url = `http://127.0.0.1:${CTRL_PORT}/3app${route}`;
+    let url = `http://127.0.0.1:${CTRL_PORT}/${route}`;
 
     let options = {
         method: 'POST',
@@ -128,7 +128,7 @@ async function fetchRoute(args, route) {
 app.post('/createReceipt', async (req, res) => {
     if(verifyReceipt(req.body)) {
         // let result = await createReceipt(req.body);
-        let result = await fetchRoute(req.body, '/createReceipt');
+        let result = await fetchRoute(req.body, 'createReceipt');
         res.send(result);
     }
     else{
