@@ -5,12 +5,11 @@
 
 const {v4: uuidv4} = require('uuid');
 
-function createShareReceiptMessage(TTL, SrcIPorHost, receipt, TXID, SrcPubKey) {
+function createShareReceiptMessage(TTL, receipt, TXID, SrcPubKey) {
     let message = {
         "Header": {
             "MsgType": "ShareReceipt",
             "TTL": TTL,
-            "SrcIPorHost": SrcIPorHost,
             "MsgID": uuidv4()
         },
         "Body": {

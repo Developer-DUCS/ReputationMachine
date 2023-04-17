@@ -69,9 +69,8 @@ app.post("/shareReceipt", (req, res) => {
     let receipt = req.body.receipt;
     let txid = req.body.txid;
     let srcPubKey = req.body.srcPubKey;
-    let SrcIPorHost = "TEST";
     try {
-        let shareMsg = createShareMsg(TTL, SrcIPorHost, receipt, txid, srcPubKey);
+        let shareMsg = createShareMsg(TTL, receipt, txid, srcPubKey);
         connMan.handleMessage(shareMsg,null);
         res.status(200);
         res.send();
@@ -80,9 +79,6 @@ app.post("/shareReceipt", (req, res) => {
         res.send();
     }
 });
-
-
-
 
 app.listen(apiPort, () => {
     console.log("API listening on port",apiPort);

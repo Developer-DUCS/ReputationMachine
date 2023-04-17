@@ -20,6 +20,7 @@ const ClientManager = require('./client_manager');
 const WsServer = require('./socket_server');
 const printError = require('../printError');
 const { json } = require('body-parser');
+const {v4: uuidv4} = require('uuid');
 
 class ConnectionManager {
     /** 
@@ -100,6 +101,8 @@ class ConnectionManager {
             return;
         }
         
+        this.sendAllExcept(jsonMessage,msgSrc);
+
         // TO DO:
         // Make db req API call 
         found = []
@@ -109,16 +112,37 @@ class ConnectionManager {
                 Header: {
                     MsgType: "RequestResponse",
                     TTL: 10,
-                    MsgID: 
+                    MsgID: uuidv4()
+                },
+                Body: {
+                    ReqID: msgID,
+                    Receipts: found
                 }
             }
-        }
-        
-        this.sendAllExcept(jsonMessage,msgSrc);
 
-        //      Send response if rcpts are found
+            this.sendAll(resMessage);
+        }
+
         console.log('ReceiveReceipt');
-        this.sendAllExcept(jsonMessage,msgSrc);
+    }
+
+    reqResponse(jsonMessage, msgSrc){
+        let msgID = jsonMessage["Body"]["ReqID"];
+        let newReceipts = jsonMessage["Body"]["Receipts"];
+        if (this.pendingReqs.includes(msgID)){
+            let index = this.pendingReqs.findIndex((element) => {
+                element.id == msgID;
+            });
+            
+            let currElement = this.pendingReqs[index]
+            this.pendingReqs[index] = {
+                id: currElement.id,
+                receipts: this.currElement.receipts.concat(newReceipts)
+            }
+        }
+        else {
+            this.sendAllExcept(jsonMessage, msgSrc);
+        }
     }
 
     // share receipt with all peers except for the excepted URL
