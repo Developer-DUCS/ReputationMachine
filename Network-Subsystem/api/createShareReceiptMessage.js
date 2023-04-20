@@ -5,7 +5,7 @@
 
 const {v4: uuidv4} = require('uuid');
 
-function createShareReceiptMessage(TTL, receipt, TXID, SrcPubKey) {
+function createShareReceiptMessage(TTL, receipt, txid, fingerprint) {
     let message = {
         "Header": {
             "MsgType": "ShareReceipt",
@@ -14,8 +14,8 @@ function createShareReceiptMessage(TTL, receipt, TXID, SrcPubKey) {
         },
         "Body": {
             "Receipt": receipt,
-            "TXID": TXID,
-            "SrcPubKey": SrcPubKey
+            "TXID": txid,
+            "Fingerprint": fingerprint
         }
     }
     return message;

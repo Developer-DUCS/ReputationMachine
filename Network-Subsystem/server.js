@@ -67,10 +67,12 @@ app.get("/getPeers", (req, res) => {
 
 app.post("/shareReceipt", (req, res) => {
     let receipt = req.body.receipt;
-    let txid = req.body.txid;
-    let srcPubKey = req.body.srcPubKey;
+    let txid = receipt.txid;
+    let fingerprint = receipt.fingerprint;
+    delete receipt.txid;
+    delete receipt.fingerprint;
     try {
-        let shareMsg = createShareMsg(TTL, receipt, txid, srcPubKey);
+        let shareMsg = createShareMsg(TTL, receipt, txid, fingerprint);
         connMan.handleMessage(shareMsg,null);
         res.status(200);
         res.send();

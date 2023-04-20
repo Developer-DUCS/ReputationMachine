@@ -54,11 +54,13 @@ class ConnectionManager {
         // throw an error, catch it here.
         try {
             if (!checkMessage(jsonMessage)){
+                console.log(jsonMessage);
                 printError("Invalid message recieved");
                 return;
             }
         }
         catch {
+            console.log(2);
             printError("Invalid message recieved");
             return;
         }
