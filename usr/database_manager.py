@@ -104,7 +104,7 @@ class DatabaseManager:
                 self.collection.find_one_and_update({"_id": failure["_id"]}, {"$set": {"status": str(failure["status"])}})
         if succeeded != []:
             for success in succeeded:
-                self.collection.find_one_and_update({"_id": success["_id"]}, {"$unset": {"status": ""}, "$set": {"TXID": str(success["TXID"])}})
+                self.collection.find_one_and_update({"_id": success["_id"]}, {"$unset": {"status": ""}})
 
     """
     Header: helper function to update one receipt
@@ -115,7 +115,7 @@ class DatabaseManager:
         if "status" in data:
             self.collection.find_one_and_update({"_id": data["_id"]}, {"$set": {"status": str(data["status"])}})
         else:
-            self.collection.find_one_and_update({"_id": data["_id"]}, {"$unset": {"status": ""}, "$set": {"TXID": str(data["TXID"])}})
+            self.collection.find_one_and_update({"_id": data["_id"]}, {"$unset": {"status": ""}})
             
     """
     Header: function to update the status of a receipt in the database
