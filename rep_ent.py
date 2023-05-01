@@ -87,7 +87,7 @@ def getReceipt():
 @app.route('/retrReceipts', methods=['POST'])
 def retrReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    receipts = dbManager.getReceiptsFromDB(request.json, False)
+    receipts = dbManager.getReceiptsFromDB(request.json, True)
     return json.dumps(receipts)
 
 @app.route('/embedStatus', methods=['POST'])
