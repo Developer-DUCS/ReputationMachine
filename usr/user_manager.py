@@ -53,6 +53,9 @@ class user_manager:
         hashed = self.shadow
         if bcrypt.checkpw(pwd.encode('utf8'), hashed.encode('utf8')):
             self.pwflag = True
+    
+    def get_rep_mach_key_pair(self):
+        return self.active_user.get_rep_mach_key_pair()
 
     def load_user(self, usr, pwd):
         filen = "/usr/" + usr + ".json"

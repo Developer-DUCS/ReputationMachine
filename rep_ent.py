@@ -128,6 +128,16 @@ def embed_fingerprint(user_obj, blkchain, fp):
     receipt_info = (tx_hash, sign)
     return receipt_info
 
+def gen_pub(usr_mgr, gpk):
+    pk_list = []
+    for i in range(gpk):
+        kp = usr_mgr.get_rep_mach_key_pair()
+        pk = kp[0]
+        pk_list.append(pk)
+
+    for i in range(gpk):
+        print(pk_list[i-1])
+
 #======================================
   # User Functions
 #======================================
@@ -205,6 +215,8 @@ def setup():
     help_str_embed = "add a new user"
     parser.add_argument("-er", "--embed_receipt", help=help_str_embed, type=str, default="")
     help_str_gtx = "retreive a bitcoin testnet transaction"
+    help_str_pk = "generate public keys"
+    parser.add_argument("-gpk", "--gen_pubkey", help=help_str_pk, type=int, default="1")
     parser.add_argument("-gtx", "--get_tx", help=help_str_gtx, type=str, default="")
     help_str_tx = "provide a txid for verification"
     parser.add_argument("-tx", "--tx", help=help_str_tx, type=str, default="")
@@ -228,6 +240,7 @@ def setup():
     embed = args.embed_receipt
     finger = args.fp
     tx = args.tx
+    gpk = args.gen_pubkey
     
     #variables
     active_user = ""
@@ -329,6 +342,8 @@ def setup():
         print(get_transaction(get_tx, blkchain))
     elif finger and tx:
         verify_receipt(blkchain, tx, finger)
+    elif gpk:
+        gen_pub(user_obj, gpk)
         
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c

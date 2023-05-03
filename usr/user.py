@@ -49,6 +49,9 @@ class user:
     def get_db(self):
         return self.dbManager
     
+    def get_rep_mach_key_pair(self):
+        return self.my_keychain.create_rep_mach_key_pair_req()
+    
     def get_user(self):
         return self.usrn
         
