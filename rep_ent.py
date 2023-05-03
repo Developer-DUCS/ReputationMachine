@@ -31,9 +31,8 @@ app = Flask('3ap')
 
 @app.route('/verifyReceipt', methods=['POST'])
 def verifyReceipt():
-    #TODO: pass a fingerprint to the blockchain to verify its existence
-
-    return request.json
+    check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
+    return str(check)
 
 @app.route('/saveReceipt', methods=['POST'])
 def saveReceipt():
@@ -50,21 +49,21 @@ def createReceipt():
     if type(request.json) == list:
         validReceipts = []
         for receipt in request.json:
-            info = embed_fingerprint(user, blockchain, receipt)
+            info = embed_fingerprint(user, blockchain, json.dumps(receipt))
             txid = info[0]
-            fp = info[1]
+            fp = info[1].hex()
             temp = addDetailsToReceipt(receipt, fp, txid)
             validReceipts.append(temp)
         dbManager.addReceiptsToDB(validReceipts)
 
         return json_util.dumps(validReceipts)
     else:
-        info = embed_fingerprint(user, blockchain, request.json)
+        info = embed_fingerprint(user, blockchain, json.dumps(request.json))
+        print(info)
         txid = info[0]
-        fp = info[1]
+        fp = info[1].hex()
         result = addDetailsToReceipt(request.json, fp, txid)
         dbManager.addReceiptsToDB(result)
-
         return json_util.dumps(result)
         
 def addDetailsToReceipt(data, fp, txid):
@@ -120,7 +119,7 @@ def get_transaction(txid, blkchain):
     
 def verify_receipt(blkchain, txid, fingerprint):
     rslt = blkchain.validate_fp_in_txid(txid, fingerprint)
-    print("This fingerprint is in the transaction: ", rslt)
+    return(rslt)
         
 def embed_fingerprint(user_obj, blkchain, fp):
     sign = user_obj.sign_rep_receipt(fp)
