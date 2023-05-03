@@ -70,7 +70,7 @@ class blockchain:
         
     def validate_fp_in_txid(self, txid, fingerprint):
         #fingerprint must be in hex
-        data = self.find_op_return(txid)
+        data = bytes.fromhex(self.find_op_return(txid)).decode("utf-8")
         conf = self.get_confirmations(txid)
         if data == fingerprint and conf > 6:
             return True
