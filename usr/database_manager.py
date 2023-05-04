@@ -144,3 +144,12 @@ class DatabaseManager:
             return {"status": query["status"]}
         else:
             return {"status": "success"}
+        
+    """
+    Header: function to get all pending receipts in the database
+    params: none
+    return: a list of json objects that contain the status of the receipt
+    """
+    def getPending(self):
+        query = self.collection.find({"status": {"$exists": True}})
+        return query
