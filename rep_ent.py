@@ -22,8 +22,12 @@ import json
 import queue
 from getpass import getpass
 from getpass import getuser
+import time
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask('3ap')
+scheduler = BackgroundScheduler()
 
 #======================================
   # 3AP Routes
@@ -149,6 +153,8 @@ def start(user_obj, blockchain_obj):
     user = user_obj
     blockchain = blockchain_obj
     dbManager = user_obj.get_db()
+    scheduler.add_job(func=check_pending_receipts, trigger="interval", seconds=60)
+    scheduler.start()
 
     app.run(host='127.0.0.1', port=3030)
 
@@ -185,14 +191,25 @@ def get_password(username):
   # Genearal Helper Functions
 #======================================
 
+def check_pending_receipts():
+    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+    receipts = get_pending_receipts()
+    print(receipts)
+
+
+def get_pending_receipts():
+    return dbManager.getReceiptsFromDB(1, True)
+
 def _sigint_handler_(signum, frame):
     # Handle ^c
     print(" -Got SIGINT-")
+    atexit.register(lambda: scheduler.shutdown())
     sys.exit(1) # - Exexution terminated from outside
         
 def _sigterm_handler_(signum, frame):
     # Handle shell kill
     print(" -Got SIGTERM-")
+    atexit.register(lambda: scheduler.shutdown())
     sys.exit(1) # - Exexution terminated from outside
     
 def sig_to_hex(sign):
