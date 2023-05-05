@@ -9,6 +9,7 @@
 
 import requests
 import json
+import bson
 from bit import PrivateKeyTestnet
 
 class blockchain:
@@ -43,10 +44,14 @@ class blockchain:
         self.secureRPC_call = self.server + self.get_tx_route + txid
         self.secureRPC_res = requests.get(self.secureRPC_call)
         return self.secureRPC_res.json()
+        
     
     def get_confirmations(self, tx):
         transaction = self.get_tx(tx)
-        confirmations = transaction["confirmations"]
+        try:
+            confirmations = transaction["confirmations"]
+        except KeyError:
+            confirmations = 0
         return confirmations
         
     def reconstruct_op_return(self, script):
