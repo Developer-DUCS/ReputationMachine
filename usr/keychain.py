@@ -32,6 +32,11 @@ class keychain:
     def create_rep_mach_key_pair(self):
         self.rep_mach_prikey = ECC.generate(curve='P-256')
         self.rep_mach_pubkey = ECC.EccKey.public_key(self.rep_mach_prikey)
+
+    def create_rep_mach_key_pair_req(self):
+        prikey = ECC.generate(curve='P-256')
+        pubkey = ECC.EccKey.public_key(prikey)
+        return (pubkey, prikey)
         
     def create_blockchain_key_pair(self):
         blockchain_prikey = Key()

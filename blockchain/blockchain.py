@@ -9,6 +9,7 @@
 
 import requests
 import json
+import bson
 from bit import PrivateKeyTestnet
 
 class blockchain:
@@ -43,10 +44,14 @@ class blockchain:
         self.secureRPC_call = self.server + self.get_tx_route + txid
         self.secureRPC_res = requests.get(self.secureRPC_call)
         return self.secureRPC_res.json()
+        
     
     def get_confirmations(self, tx):
         transaction = self.get_tx(tx)
-        confirmations = transaction["confirmations"]
+        try:
+            confirmations = transaction["confirmations"]
+        except KeyError:
+            confirmations = 0
         return confirmations
         
     def reconstruct_op_return(self, script):
@@ -70,7 +75,7 @@ class blockchain:
         
     def validate_fp_in_txid(self, txid, fingerprint):
         #fingerprint must be in hex
-        data = self.find_op_return(txid)
+        data = bytes.fromhex(self.find_op_return(txid)).decode("utf-8")
         conf = self.get_confirmations(txid)
         if data == fingerprint and conf > 6:
             return True

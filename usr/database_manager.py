@@ -113,9 +113,9 @@ class DatabaseManager:
     """ 
     def updateOneReceipt(self, data):
         if "status" in data:
-            self.collection.find_one_and_update({"_id": data["_id"]}, {"$set": {"status": str(data["status"])}})
-        else:
             self.collection.find_one_and_update({"_id": data["_id"]}, {"$unset": {"status": ""}})
+        else:
+            self.collection.find_one_and_update({"_id": data["_id"]}, {"$set": {"status": str(data["status"])}})
             
     """
     Header: function to update the status of a receipt in the database
@@ -140,7 +140,18 @@ class DatabaseManager:
     """
     def getStatus(self, data):
         query = self.collection.find_one({"_id": data["_id"]})
+        if query == None:
+            return ({})
         if "status" in query:
             return {"status": query["status"]}
         else:
             return {"status": "success"}
+        
+    """
+    Header: function to get all pending receipts in the database
+    params: none
+    return: a list of json objects that contain the status of the receipt
+    """
+    def getPending(self):
+        query = self.collection.find({"status": {"$exists": True}})
+        return query

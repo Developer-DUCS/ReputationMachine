@@ -23,9 +23,13 @@ import queue
 from getpass import getpass
 from getpass import getuser
 import requests
+import time
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
+from Crypto.Hash import SHA256
 
 app = Flask('3ap')
-
+scheduler = BackgroundScheduler()
 NETWORK_URL = "http://127.0.0.1:8080"
 
 #======================================
@@ -34,9 +38,9 @@ NETWORK_URL = "http://127.0.0.1:8080"
 
 @app.route('/verifyReceipt', methods=['POST'])
 def verifyReceipt():
-    #TODO: pass a fingerprint to the blockchain to verify its existence
-
-    return request.json
+    check = dbManager.getPending()
+    # check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
+    return str(check)
 
 @app.route('/saveReceipt', methods=['POST'])
 def saveReceipt():
@@ -59,21 +63,21 @@ def createReceipt():
     if type(request.json) == list:
         validReceipts = []
         for receipt in request.json:
-            info = embed_fingerprint(user, blockchain, receipt)
+            info = embed_fingerprint(user, blockchain, json.dumps(receipt))
             txid = info[0]
-            fp = info[1]
+            fp = info[1].hex()
             temp = addDetailsToReceipt(receipt, fp, txid)
             validReceipts.append(temp)
         dbManager.addReceiptsToDB(validReceipts)
 
         return json_util.dumps(validReceipts)
     else:
-        info = embed_fingerprint(user, blockchain, request.json)
+        info = embed_fingerprint(user, blockchain, json.dumps(request.json))
+        print(info)
         txid = info[0]
-        fp = info[1]
+        fp = info[1].hex()
         result = addDetailsToReceipt(request.json, fp, txid)
         dbManager.addReceiptsToDB(result)
-
         return json_util.dumps(result)
         
 def addDetailsToReceipt(data, fp, txid):
@@ -96,7 +100,7 @@ def getReceipt():
 @app.route('/retrReceipts', methods=['POST'])
 def retrReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    receipts = dbManager.getReceiptsFromDB(request.json, False)
+    receipts = dbManager.getReceiptsFromDB(request.json, True)
     return json.dumps(receipts)
 
 @app.route('/embedStatus', methods=['POST'])
@@ -129,13 +133,23 @@ def get_transaction(txid, blkchain):
     
 def verify_receipt(blkchain, txid, fingerprint):
     rslt = blkchain.validate_fp_in_txid(txid, fingerprint)
-    print("This fingerprint is in the transaction: ", rslt)
+    return(rslt)
         
 def embed_fingerprint(user_obj, blkchain, fp):
     sign = user_obj.sign_rep_receipt(fp)
     tx_hash = blkchain.embed_fingerprint(sign.hex())
     receipt_info = (tx_hash, sign)
     return receipt_info
+
+def gen_pub(usr_mgr, gpk):
+    pk_list = []
+    for i in range(gpk):
+        kp = usr_mgr.get_rep_mach_key_pair()
+        pk = kp[0]
+        pk_list.append(pk)
+
+    for i in range(gpk):
+        print(pk_list[i-1])
 
 #======================================
   # User Functions
@@ -149,6 +163,8 @@ def start(user_obj, blockchain_obj):
     user = user_obj
     blockchain = blockchain_obj
     dbManager = user_obj.get_db()
+    scheduler.add_job(func=(check_pending_receipts), trigger="interval", seconds=600)
+    scheduler.start()
 
     app.run(host='127.0.0.1', port=3030)
 
@@ -185,14 +201,27 @@ def get_password(username):
   # Genearal Helper Functions
 #======================================
 
+def check_pending_receipts():
+    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+    receipts = dbManager.getPending()
+    for receipt in receipts:
+
+        rslt = verify_receipt(blockchain, str(receipt["txid"]), str(receipt["fingerprint"]))
+        if rslt is True:
+            print("Receipt has confrimed: " + str(receipt["_id"]))
+            dbManager.updateReceipts(receipt)
+            print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
+
 def _sigint_handler_(signum, frame):
     # Handle ^c
     print(" -Got SIGINT-")
+    atexit.register(lambda: scheduler.shutdown())
     sys.exit(1) # - Exexution terminated from outside
         
 def _sigterm_handler_(signum, frame):
     # Handle shell kill
     print(" -Got SIGTERM-")
+    atexit.register(lambda: scheduler.shutdown())
     sys.exit(1) # - Exexution terminated from outside
     
 def sig_to_hex(sign):
@@ -214,6 +243,8 @@ def setup():
     help_str_embed = "add a new user"
     parser.add_argument("-er", "--embed_receipt", help=help_str_embed, type=str, default="")
     help_str_gtx = "retreive a bitcoin testnet transaction"
+    help_str_pk = "generate public keys"
+    parser.add_argument("-gpk", "--gen_pubkey", help=help_str_pk, type=int, default="1")
     parser.add_argument("-gtx", "--get_tx", help=help_str_gtx, type=str, default="")
     help_str_tx = "provide a txid for verification"
     parser.add_argument("-tx", "--tx", help=help_str_tx, type=str, default="")
@@ -237,6 +268,7 @@ def setup():
     embed = args.embed_receipt
     finger = args.fp
     tx = args.tx
+    gpk = args.gen_pubkey
     
     #variables
     active_user = ""
@@ -338,6 +370,8 @@ def setup():
         print(get_transaction(get_tx, blkchain))
     elif finger and tx:
         verify_receipt(blkchain, tx, finger)
+    elif gpk:
+        gen_pub(user_obj, gpk)
         
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, _sigint_handler_) # Create handler for ^c
