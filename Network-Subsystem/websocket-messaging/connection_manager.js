@@ -55,7 +55,6 @@ class ConnectionManager {
         // throw an error, catch it here.
         try {
             if (!checkMessage(jsonMessage)){
-                console.log(jsonMessage);
                 printError("Invalid message recieved");
                 return;
             }
@@ -90,15 +89,30 @@ class ConnectionManager {
         // TODO:
         // Verify rcpt hash w/ blockchain
         
-        //if (Math.random() * 100 <= this.prctSave) {
-        if(true){
-            // TODO:
-            // SAVE TO DB
-            let xhr = new XMLHttpRequest();
-            console.log("TEST")
-            xhr.open("POST","https://localhost:3030");
-            console.log(jsonMessage.Body)
-            console.log("Saving to DB");
+        if (Math.random() * 100 <= this.prctSave) {
+            let data = JSON.stringify(jsonMessage["Body"]["Receipt"]);
+            
+            let options = {
+                hostname: "127.0.0.1",
+                port: 3030,
+                path: '/saveLocal',
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Content-Length': data.length
+                }
+            }
+            
+            const req = http.request(options, res => {
+                console.log(`statusCode: ${res.statusCode}`)
+            });
+            
+            req.on('error', error => {
+                console.error(error);
+            });
+            req.write(data);
+            req.end();
+
         }
         this.sendAllExcept(jsonMessage,msgSrc);
         return;

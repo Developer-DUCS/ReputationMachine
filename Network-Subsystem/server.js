@@ -69,7 +69,6 @@ app.post("/shareReceipt", (req, res) => {
     let receipt = req.body.receipt;
     try {
         let shareMsg = createShareMsg(TTL, receipt);
-        console.log(shareMsg)
         connMan.handleMessage(shareMsg,null);
         res.status(200);
         res.send();

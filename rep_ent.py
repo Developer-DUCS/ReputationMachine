@@ -50,10 +50,15 @@ def saveReceipt():
         "ttl": 5,
         "receipt" : rcpt
     }
-    networkRes = requests.post(NETWORK_URL + "/saveReceipt", json = networkReqBody)
-    print(networkRes)
+    networkRes = requests.post(NETWORK_URL + "/shareReceipt", json = networkReqBody)
+    dbManager.addReceiptsToDB(request.json)    
+    return json_util.dumps(request.json)
+
+@app.route('/saveLocal', methods=['POST'])
+def saveLocal():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    rcpt = request.json
     dbManager.addReceiptsToDB(request.json)
-    
     return json_util.dumps(request.json)
 
 @app.route('/createReceipt', methods=['POST'])

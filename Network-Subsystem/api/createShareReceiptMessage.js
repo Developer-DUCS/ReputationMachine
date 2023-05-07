@@ -6,8 +6,6 @@
 const {v4: uuidv4} = require('uuid');
 
 function createShareReceiptMessage(TTL, receipt) {
-    
-    console.log("TEST")
     let message = {
         "Header": {
             "MsgType": "ShareReceipt",
@@ -18,7 +16,6 @@ function createShareReceiptMessage(TTL, receipt) {
             "Receipt": receipt
         }
     }
-    console.log("TEST")
     return message;
 }
 
