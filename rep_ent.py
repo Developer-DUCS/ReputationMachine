@@ -113,12 +113,11 @@ def embedStatus():
     status = dbManager.getStatus(request.json)
     return status
 
-@app.route('/updateReceipts', methods=['POST'])
-def updateReceipts():
-    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    dbManager.updateReceipts(request.json)
-    #TODO: propagate receipts through network
-    return "Updated Receipts"
+# @app.route('/updateReceipts', methods=['POST'])
+# def updateReceipts():
+#     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+#     #TODO: propagate receipts through network
+#     return "Updated Receipts"
 
 #======================================
   # Blockchain Functions
@@ -214,6 +213,7 @@ def check_pending_receipts():
         if rslt is True:
             print("Receipt has confrimed: " + str(receipt["_id"]))
             dbManager.updateReceipts(receipt)
+            #TODO: propagate receipts through network
             print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
 def _sigint_handler_(signum, frame):
