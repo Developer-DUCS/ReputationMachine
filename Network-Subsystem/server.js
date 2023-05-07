@@ -67,12 +67,9 @@ app.get("/getPeers", (req, res) => {
 
 app.post("/shareReceipt", (req, res) => {
     let receipt = req.body.receipt;
-    let txid = receipt.txid;
-    let fingerprint = receipt.fingerprint;
-    delete receipt.txid;
-    delete receipt.fingerprint;
     try {
-        let shareMsg = createShareMsg(TTL, receipt, txid, fingerprint);
+        let shareMsg = createShareMsg(TTL, receipt);
+        console.log(shareMsg)
         connMan.handleMessage(shareMsg,null);
         res.status(200);
         res.send();
@@ -81,6 +78,10 @@ app.post("/shareReceipt", (req, res) => {
         res.send();
     }
 });
+
+app.get("/receipts", (req,res) => {
+
+})
 
 app.listen(apiPort, () => {
     console.log("API listening on port",apiPort);

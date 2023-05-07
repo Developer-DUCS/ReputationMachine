@@ -21,6 +21,7 @@ const WsServer = require('./socket_server');
 const printError = require('../printError');
 const { json } = require('body-parser');
 const {v4: uuidv4} = require('uuid');
+const http = require('http');
 
 class ConnectionManager {
     /** 
@@ -76,6 +77,7 @@ class ConnectionManager {
         this.messageCache.cache(msgID);
 
         if (jsonMessage.Header.MsgType === 'ShareReceipt') {
+            console.log("A")
             this.shareReceipt(jsonMessage,messageSource);
         }
         else if (jsonMessage.Header.MsgType === 'RequestReceipt') {
@@ -88,9 +90,14 @@ class ConnectionManager {
         // TODO:
         // Verify rcpt hash w/ blockchain
         
-        if (Math.random() * 100 <= this.prctSave) {
+        //if (Math.random() * 100 <= this.prctSave) {
+        if(true){
             // TODO:
             // SAVE TO DB
+            let xhr = new XMLHttpRequest();
+            console.log("TEST")
+            xhr.open("POST","https://localhost:3030");
+            console.log(jsonMessage.Body)
             console.log("Saving to DB");
         }
         this.sendAllExcept(jsonMessage,msgSrc);
