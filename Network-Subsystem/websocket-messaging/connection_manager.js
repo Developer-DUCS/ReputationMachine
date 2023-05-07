@@ -81,6 +81,9 @@ class ConnectionManager {
         else if (jsonMessage.Header.MsgType === 'RequestReceipt') {
             return await this.requestReceipt(jsonMessage, jsonMessage["Body"]["ReqParams"], messageSource);
         }
+        else if (jsonMessage.Header.MsgType === 'RequestResponse'){
+            this.reqResponse(jsonMessage, messageSource)
+        }
         return;
     }
 
@@ -118,9 +121,8 @@ class ConnectionManager {
     }
 
     async requestReceipt(jsonMessage, reqParams, msgSrc) {
-        console.log("1")
         return await this.requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc).then(result => {
-            return result;
+            return result.found;
         });
     }
 
@@ -128,10 +130,43 @@ class ConnectionManager {
         // get the ID for our current request
         let currReqId = jsonMessage.Header.MsgID
 
-        this.sendAllExcept(jsonMessage,msgSrc);        
+        this.sendAllExcept(jsonMessage,msgSrc);
         reqParams = JSON.stringify(reqParams);
         let found = []
         
+        this.getLocalReceipts(reqParams,(newReceipts) => {
+            newReceipts.forEach((item) => {
+                found.push(item);
+            });
+            // send request response
+            if (found.length > 0){
+                let resMessage = {
+                    Header: {
+                        "MsgType": "RequestResponse",
+                        "TTL": 10,
+                        "MsgID": uuidv4()
+                    },
+                    Body: {
+                        ReqID: currReqId,
+                        Receipts: found
+                    }
+                }
+                console.log(resMessage)
+
+                this.sendAll(resMessage);
+            }
+        })
+
+        this.pendingReqs.push({"ID": currReqId, "found": found})
+
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(this.pendingReqs.find(rcpt => rcpt.ID === currReqId));
+            }, jsonMessage.Header.TTL * 1000)
+        });
+    }
+
+    getLocalReceipts(reqParams, callback) {
         let options = {
             hostname: "127.0.0.1",
             port: 3030,
@@ -145,54 +180,39 @@ class ConnectionManager {
         
         // make request to local database
         const req = http.request(options, res => {
-            found.concat(res)
+            let data = '';
+            res.on('data', chunk => {
+                data += chunk;
+            });
+            
+            res.on('end', () => {
+                callback(JSON.parse(data));
+            })
+
+            res.on('error', error => {
+                console.log(error);
+            })
         });
+        
         req.on('error', error => {
             console.error(error);
         });
         req.write(reqParams);
         req.end();
-
-        this.pendingReqs.push({"ID": currReqId, "found": found})
-
-        // send request response
-        if (found.length > 0){
-            resMessage = {
-                Header: {
-                    MsgType: "RequestResponse",
-                    TTL: 10,
-                    MsgID: uuidv4()
-                },
-                Body: {
-                    ReqID: msgID,
-                    Receipts: found
-                }
-            }
-
-            this.sendAll(resMessage);
-        }
-
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve(this.pendingReqs.find(rcpt => rcpt.ID === currReqId));
-            }, REQ_WAIT_TIME)
-        });
     }
 
     reqResponse(jsonMessage, msgSrc){
         let msgID = jsonMessage["Body"]["ReqID"];
         let newReceipts = jsonMessage["Body"]["Receipts"];
 
-        if (this.pendingReqs.includes(msgID)){
-            let index = this.pendingReqs.findIndex((element) => {
-                element.id == msgID;
-            });
-            
-            let currElement = this.pendingReqs[index]
-            this.pendingReqs[index] = {
-                id: currElement.id,
-                receipts: this.currElement.receipts.concat(newReceipts)
-            }
+        let req = this.pendingReqs.find(rcpt => rcpt.ID === msgID)
+        console.log(req)
+        if (req){
+            newReceipts.forEach((rcpt) => {
+                req.found.push(rcpt);
+            })
+            //remove duplicate receipts
+            req.found = req.found((obj) => !Object.values(obj).come((val) => val === _id))
         }
         else {
             this.sendAllExcept(jsonMessage, msgSrc);

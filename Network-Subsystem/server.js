@@ -83,7 +83,6 @@ app.post("/getReceipts", async (req,res) => {
     try {
         let getRcptMsg = createGetMsg(TTL, req.body)
         found = await connMan.handleMessage(getRcptMsg, null);
-        console.log(found)
         res.status(200);
         res.send({"receipts": found});
     } catch {
