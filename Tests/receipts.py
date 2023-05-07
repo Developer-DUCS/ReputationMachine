@@ -43,7 +43,7 @@ def random_claim(claim_id):
             "id": str(claim_id),
             "type": str(type),
             "category": str(category),
-            "content": str(content)
+            "content": content
         }   
 
     return temp
