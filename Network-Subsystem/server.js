@@ -39,6 +39,7 @@ initCommandLine(connMan.clientManager,connMan.sockServ,config);
 const getNumPeers = require('./api/getNumPeers');
 const getPeers = require('./api/getPeers');
 const createShareMsg = require('./api/createShareReceiptMessage');
+const createGetMsg = require('./api/createGetReceiptMessage')
 
 // define API routes
 app.get("/getNumPeers", (req, res) => {
@@ -78,7 +79,19 @@ app.post("/shareReceipt", (req, res) => {
     }
 });
 
-app.get("/receipts", (req,res) => {
+app.post("/getReceipts", async (req,res) => {
+    try {
+        let getRcptMsg = createGetMsg(TTL, req.body)
+        found = await connMan.handleMessage(getRcptMsg, null);
+        console.log(found)
+        res.status(200);
+        res.send({"receipts": found});
+    } catch {
+        res.status(500);
+        res.send();
+    }
+    // TODO: add local receipts to receipts array
+
 
 })
 

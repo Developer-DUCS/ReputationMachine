@@ -23,6 +23,7 @@ const { json } = require('body-parser');
 const {v4: uuidv4} = require('uuid');
 const http = require('http');
 
+const REQ_WAIT_TIME = 5000
 class ConnectionManager {
     /** 
     * @param {number} messageRetentionTime - The maximum number of messages to be stored in the cache
@@ -39,7 +40,7 @@ class ConnectionManager {
         this.pendingReqs = [];
     }
 
-    handleMessage(message, messageSource) {
+    async handleMessage(message, messageSource) {
         let jsonMessage;
 
         // try to parse the message, if you can't it's already a json object
@@ -60,7 +61,6 @@ class ConnectionManager {
             }
         }
         catch {
-            console.log(2);
             printError("Invalid message recieved");
             return;
         }
@@ -76,11 +76,10 @@ class ConnectionManager {
         this.messageCache.cache(msgID);
 
         if (jsonMessage.Header.MsgType === 'ShareReceipt') {
-            console.log("A")
             this.shareReceipt(jsonMessage,messageSource);
         }
         else if (jsonMessage.Header.MsgType === 'RequestReceipt') {
-            requestReceipt(jsonMessage, msgID, messageSource);
+            return await this.requestReceipt(jsonMessage, jsonMessage["Body"]["ReqParams"], messageSource);
         }
         return;
     }
@@ -88,14 +87,14 @@ class ConnectionManager {
     shareReceipt(jsonMessage, msgSrc) {
         // TODO:
         // Verify rcpt hash w/ blockchain
-        
+
         if (Math.random() * 100 <= this.prctSave) {
             let data = JSON.stringify(jsonMessage["Body"]["Receipt"]);
             
             let options = {
                 hostname: "127.0.0.1",
                 port: 3030,
-                path: '/saveLocal',
+                path: '/saveReceipt',
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -118,18 +117,45 @@ class ConnectionManager {
         return;
     }
 
-    async requestReceipt(jsonMessage, msgID, msgSrc) {
-        // check if req ID is pending, if so, do not process the request
-        if (this.pendingReqs.includes(msgID)){
-            return;
+    async requestReceipt(jsonMessage, reqParams, msgSrc) {
+        console.log("1")
+        return await this.requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc).then(result => {
+            return result;
+        });
+    }
+
+    requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc){
+        // get the ID for our current request
+        let currReqId = jsonMessage.Header.MsgID
+
+        this.sendAllExcept(jsonMessage,msgSrc);        
+        reqParams = JSON.stringify(reqParams);
+        let found = []
+        
+        let options = {
+            hostname: "127.0.0.1",
+            port: 3030,
+            path: '/retrReceipts',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': reqParams.length
+            }
         }
         
-        this.sendAllExcept(jsonMessage,msgSrc);
+        // make request to local database
+        const req = http.request(options, res => {
+            found.concat(res)
+        });
+        req.on('error', error => {
+            console.error(error);
+        });
+        req.write(reqParams);
+        req.end();
 
-        // TO DO:
-        // Make db req API call 
-        found = []
+        this.pendingReqs.push({"ID": currReqId, "found": found})
 
+        // send request response
         if (found.length > 0){
             resMessage = {
                 Header: {
@@ -146,12 +172,17 @@ class ConnectionManager {
             this.sendAll(resMessage);
         }
 
-        console.log('ReceiveReceipt');
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(this.pendingReqs.find(rcpt => rcpt.ID === currReqId));
+            }, REQ_WAIT_TIME)
+        });
     }
 
     reqResponse(jsonMessage, msgSrc){
         let msgID = jsonMessage["Body"]["ReqID"];
         let newReceipts = jsonMessage["Body"]["Receipts"];
+
         if (this.pendingReqs.includes(msgID)){
             let index = this.pendingReqs.findIndex((element) => {
                 element.id == msgID;

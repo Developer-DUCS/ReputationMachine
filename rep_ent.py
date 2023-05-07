@@ -45,19 +45,7 @@ def verifyReceipt():
 def saveReceipt():
     rcpt = request.json
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    networkReqBody = {
-        "ttl": 5,
-        "receipt" : rcpt
-    }
-    networkRes = requests.post(NETWORK_URL + "/shareReceipt", json = networkReqBody)
     dbManager.addReceiptsToDB(request.json)    
-    return json_util.dumps(request.json)
-
-@app.route('/saveLocal', methods=['POST'])
-def saveLocal():
-    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    rcpt = request.json
-    dbManager.addReceiptsToDB(request.json)
     return json_util.dumps(request.json)
 
 @app.route('/createReceipt', methods=['POST'])
@@ -104,6 +92,7 @@ def getReceipt():
 def retrReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     receipts = dbManager.getReceiptsFromDB(request.json, True)
+    print(receipts)
     return json.dumps(receipts)
 
 @app.route('/embedStatus', methods=['POST'])
@@ -112,11 +101,12 @@ def embedStatus():
     status = dbManager.getStatus(request.json)
     return status
 
-# @app.route('/updateReceipts', methods=['POST'])
-# def updateReceipts():
-#     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-#     #TODO: propagate receipts through network
-#     return "Updated Receipts"
+@app.route('/updateReceipts', methods=['POST'])
+def updateReceipts():
+    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+    dbManager.updateReceipts(request.json)
+    #TODO: propagate receipts through network
+    return "Updated Receipts"
 
 #======================================
   # Blockchain Functions
