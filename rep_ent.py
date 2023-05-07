@@ -19,9 +19,9 @@ from flask import Flask, request
 from bson import json_util
 from hashlib import sha256
 import json
-import queue
+# import queue
 from getpass import getpass
-from getpass import getuser
+# from getpass import getuser
 import requests
 import time
 import atexit

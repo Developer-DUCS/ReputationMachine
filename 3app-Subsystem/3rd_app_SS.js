@@ -5,7 +5,7 @@ const app = express();
 
 const CTRL_PORT = 3030;
 const PORT = 3000;
-const KEY_CHECK = 'MIIBCgKCAQEA';
+// const KEY_CHECK = 'MIIBCgKCAQEA';
 // const CHECK_LENGTH = KEY_CHECK.length;
 // const KEY_LENGTH = 360;
 
