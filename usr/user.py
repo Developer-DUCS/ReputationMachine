@@ -4,6 +4,8 @@
 #Date: 1/21/23
 #Description: This is the user subsystem
 
+#© Drury University 2023
+
 import uuid
 import os.path
 import sys

@@ -5,45 +5,45 @@ const app = express();
 
 const CTRL_PORT = 3030;
 const PORT = 3000;
-const KEY_CHECK = 'MIIBCgKCAQEA';
-const CHECK_LENGTH = KEY_CHECK.length;
-const KEY_LENGTH = 360;
+// const KEY_CHECK = 'MIIBCgKCAQEA';
+// const CHECK_LENGTH = KEY_CHECK.length;
+// const KEY_LENGTH = 360;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 function validSource(source) {
 
-    // if (typeof source == 'string') {
-    //     return true;
-    // }
-    // else {
-    //     return false;
-    // }
-
-    if (typeof source == 'string' && source.length === KEY_LENGTH && source.substring(0, CHECK_LENGTH) === KEY_CHECK) {
+    if (typeof source == 'string') {
         return true;
     }
     else {
         return false;
     }
+
+    // if (typeof source == 'string' && source.length === KEY_LENGTH && source.substring(0, CHECK_LENGTH) === KEY_CHECK) {
+    //     return true;
+    // }
+    // else {
+    //     return false;
+    // }
 }
 
 function validTarget(target) {
 
-    // if (typeof target == 'string') {
-    //     return true;
-    // }
-    // else {
-    //     return false;
-    // }
-
-    if (typeof target == 'string' && target.length === KEY_LENGTH && target.substring(0, CHECK_LENGTH) === KEY_CHECK) {
+    if (typeof target == 'string') {
         return true;
     }
     else {
         return false;
     }
+
+    // if (typeof target == 'string' && target.length === KEY_LENGTH && target.substring(0, CHECK_LENGTH) === KEY_CHECK) {
+    //     return true;
+    // }
+    // else {
+    //     return false;
+    // }
 }
 
 function validClaim(claim) {

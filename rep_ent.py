@@ -3,7 +3,7 @@
 #Author: Jon Sigman
 #Date: 1/21/23
 #Description: This is the control sub-module for the reputable entity.
-# txid: b1be038b5b0c095c927857cde9817805692866e4ba7a183bb843602dafce4009
+#© Drury University 2023
 
 import os
 import sys
@@ -19,9 +19,9 @@ from flask import Flask, request
 from bson import json_util
 from hashlib import sha256
 import json
-import queue
+# import queue
 from getpass import getpass
-from getpass import getuser
+# from getpass import getuser
 import requests
 import time
 import atexit
@@ -38,8 +38,7 @@ NETWORK_URL = "http://127.0.0.1:8080"
 
 @app.route('/verifyReceipt', methods=['POST'])
 def verifyReceipt():
-    check = dbManager.getPending()
-    # check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
+    check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
     return str(check)
 
 @app.route('/saveReceipt', methods=['POST'])
@@ -86,10 +85,9 @@ def addDetailsToReceipt(data, fp, txid):
 @app.route('/getReceipts', methods=['POST'])
 def getReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    receipts = dbManager.getReceiptsFromDB(request.json, True)
+    # receipts = dbManager.getReceiptsFromDB(request.json, True)
     #TODO: pass a request for the given id to the network and get the receipts from the network
-    
-    return json.dumps(receipts)
+    return json.dumps(request.json)
 
 @app.route('/retrReceipts', methods=['POST'])
 def retrReceipt():
@@ -108,11 +106,7 @@ def embedStatus():
 def updateReceipts():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     dbManager.updateReceipts(request.json)
-    networkReqBody = {
-        "ttl": 5,
-        "receipt" : request.json
-    }
-    requests.post(NETWORK_URL + "/shareReceipt", json = networkReqBody)
+    #TODO: propagate receipts through network
     return "Updated Receipts"
 
 #======================================
@@ -208,7 +202,11 @@ def check_pending_receipts():
         rslt = verify_receipt(blockchain, str(receipt["txid"]), str(receipt["fingerprint"]))
         if rslt is True:
             print("Receipt has confrimed: " + str(receipt["_id"]))
-            dbManager.updateReceipts(receipt)
+            confirmed = receipt
+            dbManager.updateReceipts(confirmed)
+            receipt.pop("status")
+            #TODO: propagate receipts through network
+            #await network api call 
             print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
 def _sigint_handler_(signum, frame):

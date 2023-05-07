@@ -4,12 +4,11 @@
 #Date: 1/21/23
 #Description: This is the blockchain subsystem
 
-#test TX for OP_Return investigation: 60c63b824dca272f946095138a8d47249e37fb8444418e6557c1699586094419
-# 59d008fe7be094899fad9c983ef9cd3cfdb050e9cdcd21f3ab6e213c9903ce09
+#© Drury University 2023
 
 import requests
-import json
-import bson
+# import json
+# import bson
 from bit import PrivateKeyTestnet
 
 class blockchain:
