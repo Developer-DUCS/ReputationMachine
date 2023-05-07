@@ -46,19 +46,7 @@ def verifyReceipt():
 def saveReceipt():
     rcpt = request.json
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    networkReqBody = {
-        "ttl": 5,
-        "receipt" : rcpt
-    }
-    networkRes = requests.post(NETWORK_URL + "/shareReceipt", json = networkReqBody)
     dbManager.addReceiptsToDB(request.json)    
-    return json_util.dumps(request.json)
-
-@app.route('/saveLocal', methods=['POST'])
-def saveLocal():
-    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    rcpt = request.json
-    dbManager.addReceiptsToDB(request.json)
     return json_util.dumps(request.json)
 
 @app.route('/createReceipt', methods=['POST'])
@@ -100,6 +88,7 @@ def getReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     receipts = dbManager.getReceiptsFromDB(request.json, True)
     #TODO: pass a request for the given id to the network and get the receipts from the network
+    
     return json.dumps(receipts)
 
 @app.route('/retrReceipts', methods=['POST'])
@@ -118,7 +107,11 @@ def embedStatus():
 def updateReceipts():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     dbManager.updateReceipts(request.json)
-    #TODO: propagate receipts through network
+    networkReqBody = {
+        "ttl": 5,
+        "receipt" : request.json
+    }
+    requests.post(NETWORK_URL + "/shareReceipt", json = networkReqBody)
     return "Updated Receipts"
 
 #======================================

@@ -80,7 +80,7 @@ class ConnectionManager {
             this.shareReceipt(jsonMessage,messageSource);
         }
         else if (jsonMessage.Header.MsgType === 'RequestReceipt') {
-            requestReceipt(jsonMessage, msgID, messageSource);
+            return this.requestReceipt(jsonMessage, jsonMessage["Body"]["ReqParams"]);
         }
         return;
     }
@@ -88,14 +88,14 @@ class ConnectionManager {
     shareReceipt(jsonMessage, msgSrc) {
         // TODO:
         // Verify rcpt hash w/ blockchain
-        
+
         if (Math.random() * 100 <= this.prctSave) {
             let data = JSON.stringify(jsonMessage["Body"]["Receipt"]);
             
             let options = {
                 hostname: "127.0.0.1",
                 port: 3030,
-                path: '/saveLocal',
+                path: '/saveReceipt',
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ class ConnectionManager {
         return;
     }
 
-    async requestReceipt(jsonMessage, msgID, msgSrc) {
+    async requestReceipt(jsonMessage, reqParams) {
         // check if req ID is pending, if so, do not process the request
         if (this.pendingReqs.includes(msgID)){
             return;
@@ -129,6 +129,26 @@ class ConnectionManager {
         // TO DO:
         // Make db req API call 
         found = []
+        let options = {
+            hostname: "127.0.0.1",
+            port: 3030,
+            path: '/retrReceipts',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': reqParams.length
+            }
+        }
+        
+        const req = http.request(options, res => {
+            found.concat(res)
+        });
+        
+        req.on('error', error => {
+            console.error(error);
+        });
+        req.write(reqParams);
+        req.end();
 
         if (found.length > 0){
             resMessage = {
