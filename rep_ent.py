@@ -65,7 +65,6 @@ def createReceipt():
         return json_util.dumps(validReceipts)
     else:
         info = embed_fingerprint(user, blockchain, json.dumps(request.json))
-        print(info)
         txid = info[0]
         fp = info[1].hex()
         result = addDetailsToReceipt(request.json, fp, txid)
