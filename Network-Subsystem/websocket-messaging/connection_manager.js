@@ -88,36 +88,37 @@ class ConnectionManager {
     }
 
     shareReceipt(jsonMessage, msgSrc) {
-        // TODO:
-        // Verify rcpt hash w/ blockchain
-
-        if (Math.random() * 100 <= this.prctSave) {
-            let data = JSON.stringify(jsonMessage["Body"]["Receipt"]);
-            
-            let options = {
-                hostname: "127.0.0.1",
-                port: 3030,
-                path: '/saveReceipt',
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Content-Length': data.length
+        let rcpt = JSON.stringify(jsonMessage["Body"]["Receipt"]);
+        let valid = false
+        this.verifyReceipt(rcpt, (res) => {
+            if (res == "True") {
+                if (Math.random() * 100 <= this.prctSave) {
+                    let options = {
+                        hostname: "127.0.0.1",
+                        port: 3030,
+                        path: '/saveReceipt',
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': rcpt.length
+                        }
+                    }
+                    
+                    const req = http.request(options, res => {
+                        console.log(`statusCode: ${res.statusCode}`)
+                    });
+                    
+                    req.on('error', error => {
+                        console.error(error);
+                    });
+                    req.write(rcpt);
+                    req.end();
+        
                 }
-            }
-            
-            const req = http.request(options, res => {
-                console.log(`statusCode: ${res.statusCode}`)
-            });
-            
-            req.on('error', error => {
-                console.error(error);
-            });
-            req.write(data);
-            req.end();
-
-        }
-        this.sendAllExcept(jsonMessage,msgSrc);
-        return;
+                this.sendAllExcept(jsonMessage,msgSrc);
+                }
+        });
+        return;  
     }
 
     async requestReceipt(jsonMessage, reqParams, msgSrc) {
@@ -126,7 +127,7 @@ class ConnectionManager {
         });
     }
 
-    async requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc){
+    requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc){
         // get the ID for our current request
         let currReqId = jsonMessage.Header.MsgID
 
@@ -165,6 +166,42 @@ class ConnectionManager {
                 resolve(this.pendingReqs.find(rcpt => rcpt.ID === currReqId));
             }, jsonMessage.Header.TTL * 1000)
         });
+    }
+
+    verifyReceipt(receipt, callback) {
+        let options = {
+            hostname: "127.0.0.1",
+            port: 3030,
+            path: '/verifyReceipt',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': receipt.length
+            }
+        }
+        
+        let data = "" 
+        const req = http.request(options, res => {
+
+            res.on('data', chunk => {
+                data += chunk;
+            });
+            
+            res.on('end', () => {
+                callback(data)
+            })
+
+            res.on('error', error => {
+                console.log(error);
+            })
+        });
+        
+        req.on('error', error => {
+            console.error(error);
+        });
+        req.write(receipt);
+        req.end();
+
     }
 
     getLocalReceipts(reqParams, callback) {
