@@ -212,8 +212,11 @@ def check_pending_receipts():
         rslt = verify_receipt(blockchain, str(receipt["txid"]), str(receipt["fingerprint"]))
         if rslt is True:
             print("Receipt has confrimed: " + str(receipt["_id"]))
-            dbManager.updateReceipts(receipt)
+            confirmed = receipt
+            dbManager.updateReceipts(confirmed)
+            receipt.pop("status")
             #TODO: propagate receipts through network
+            #await network api call 
             print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
 def _sigint_handler_(signum, frame):
