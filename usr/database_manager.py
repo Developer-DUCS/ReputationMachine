@@ -113,9 +113,9 @@ class DatabaseManager:
     """ 
     def updateOneReceipt(self, data):
         if "status" in data:
-            self.collection.find_one_and_update({"_id": data["_id"]}, {"$set": {"status": str(data["status"])}})
-        else:
             self.collection.find_one_and_update({"_id": data["_id"]}, {"$unset": {"status": ""}})
+        else:
+            self.collection.find_one_and_update({"_id": data["_id"]}, {"$set": {"status": str(data["status"])}})
             
     """
     Header: function to update the status of a receipt in the database

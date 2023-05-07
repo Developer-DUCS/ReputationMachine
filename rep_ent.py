@@ -25,6 +25,7 @@ from getpass import getuser
 import time
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
+from Crypto.Hash import SHA256
 
 app = Flask('3ap')
 scheduler = BackgroundScheduler()
@@ -35,7 +36,8 @@ scheduler = BackgroundScheduler()
 
 @app.route('/verifyReceipt', methods=['POST'])
 def verifyReceipt():
-    check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
+    check = dbManager.getPending()
+    # check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
     return str(check)
 
 @app.route('/saveReceipt', methods=['POST'])
@@ -153,7 +155,7 @@ def start(user_obj, blockchain_obj):
     user = user_obj
     blockchain = blockchain_obj
     dbManager = user_obj.get_db()
-    scheduler.add_job(func=check_pending_receipts, trigger="interval", seconds=60)
+    scheduler.add_job(func=(check_pending_receipts), trigger="interval", seconds=600)
     scheduler.start()
 
     app.run(host='127.0.0.1', port=3030)
@@ -193,12 +195,14 @@ def get_password(username):
 
 def check_pending_receipts():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
-    receipts = get_pending_receipts()
-    print(receipts)
+    receipts = dbManager.getPending()
+    for receipt in receipts:
 
-
-def get_pending_receipts():
-    return dbManager.getReceiptsFromDB(1, True)
+        rslt = verify_receipt(blockchain, str(receipt["txid"]), str(receipt["fingerprint"]))
+        if rslt is True:
+            print("Receipt has confrimed: " + str(receipt["_id"]))
+            dbManager.updateReceipts(receipt)
+            print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
 def _sigint_handler_(signum, frame):
     # Handle ^c
