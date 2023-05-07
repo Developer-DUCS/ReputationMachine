@@ -39,6 +39,7 @@ NETWORK_URL = "http://127.0.0.1:8080"
 @app.route('/verifyReceipt', methods=['POST'])
 def verifyReceipt():
     check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
+    print("TESTING")
     return str(check)
 
 @app.route('/saveReceipt', methods=['POST'])
@@ -152,11 +153,10 @@ def start(user_obj, blockchain_obj):
     global user
     global blockchain
     global dbManager 
-
     user = user_obj
     blockchain = blockchain_obj
     dbManager = user_obj.get_db()
-    scheduler.add_job(func=(check_pending_receipts), trigger="interval", seconds=600)
+    scheduler.add_job(func=(check_pending_receipts), trigger="interval", seconds=20)
     scheduler.start()
 
     app.run(host='127.0.0.1', port=3030)
