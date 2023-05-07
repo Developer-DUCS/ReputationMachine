@@ -2,9 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 
-// import * as check from './3appSS_logic.js';
-// const check = require('./3appSS_logic.js');
-
 const CTRL_PORT = 3030;
 const PORT = 3000;
 const KEY_CHECK = 'MIIBCgKCAQEA';
@@ -14,8 +11,15 @@ const KEY_LENGTH = 360;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// will eventually compose of checking to see if the source is a valid public key
 function validSource(source) {
+
+    // if (typeof source == 'string') {
+    //     return true;
+    // }
+    // else {
+    //     return false;
+    // }
+
     if (typeof source == 'string' && source.length === KEY_LENGTH && source.substring(0, CHECK_LENGTH) === KEY_CHECK) {
         return true;
     }
@@ -24,8 +28,15 @@ function validSource(source) {
     }
 }
 
-// will eventually compose of checking to see if the target is a valid public key
 function validTarget(target) {
+
+    // if (typeof target == 'string') {
+    //     return true;
+    // }
+    // else {
+    //     return false;
+    // }
+
     if (typeof target == 'string' && target.length === KEY_LENGTH && target.substring(0, CHECK_LENGTH) === KEY_CHECK) {
         return true;
     }
@@ -35,7 +46,6 @@ function validTarget(target) {
 }
 
 function validClaim(claim) {
-    // initial check, will be reformatted to check if claim id 
     if (typeof claim.id == 'string' && typeof claim.type == 'string') {
         if (claim.type == 'Deletion') {
             if (claim.category == null && claim.content == null) {
@@ -68,23 +78,6 @@ function validClaim(claim) {
 }
 
 function verifyReceipt(receipt) {
-    /*
-    Valid receipt composes of the following value:
-    {
-        "source": {
-            "string"
-        },
-        "target": {
-            "string"
-        },
-        "claim": {
-            "id": "string",
-            "type": "string",
-            "category": "string" or null,
-            "content": "string" or integer or null,
-        }
-    }
-    */
     if(validSource(receipt.source) && validTarget(receipt.target) && validClaim(receipt.claim)) {
         return true
     }
@@ -95,8 +88,6 @@ function verifyReceipt(receipt) {
 }
 
 function validHash(hashObject) {
-
-    //regex to check if the hash is a valid length(64) and only contains hex characters
     let sha256Pattern = /^[0-9a-fA-F]{64}$/;
 
     if(typeof hashObject.hash == 'string' && sha256Pattern.test(hashObject.hash)) {
@@ -127,7 +118,6 @@ async function fetchRoute(args, route) {
 
 app.post('/createReceipt', async (req, res) => {
     if(verifyReceipt(req.body)) {
-        // let result = await createReceipt(req.body);
         let result = await fetchRoute(req.body, 'createReceipt');
         res.send(result);
     }
@@ -152,7 +142,6 @@ app.get('/getReceipts/:id', async (req, res) => {
                 res.send('Invalid source id!');
             }
             else {
-                // let result = await getReceiptsById(request);
                 let result = await fetchRoute(request, '/getReceipts');
                 res.send(result);
             }
@@ -165,7 +154,6 @@ app.get('/getReceipts/:id', async (req, res) => {
                 res.send(`${JSON.stringify(request)} - Invalid target id!`);
             }
             else {
-                // let result = await getReceiptsById(request);
                 let result = await fetchRoute(request, '/getReceipts');
                 res.send(result);
             }
@@ -179,9 +167,13 @@ app.get('/embedStatus', async (req, res) => {
         res.send(`${JSON.stringify(req.body)} - Invalid hash!`)
     }
     else {
-        // let result = await getReceiptByHash(req.body);
-        let result = await fetchRoute(req.body, '/embedStatus');
-        res.send(result)
+        let result = await fetchRoute(req.body, 'embedStatus');
+        if(result === {}) {
+            res.send('No receipt found with that hash!');
+        }
+        else {
+            res.send(result);
+        }
     }
 });
 

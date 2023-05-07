@@ -140,6 +140,8 @@ class DatabaseManager:
     """
     def getStatus(self, data):
         query = self.collection.find_one({"_id": data["_id"]})
+        if query == None:
+            return ({})
         if "status" in query:
             return {"status": query["status"]}
         else:
