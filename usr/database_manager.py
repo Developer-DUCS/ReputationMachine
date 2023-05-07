@@ -55,9 +55,9 @@ class DatabaseManager:
         value = list(id.values())
         
         query = self.collection.find({"$and": [
-            {"TXID": {"$exists": valid}},
+            {"status": {"$exists": not valid}},
             {key[0]: value[0]}
-        ]}, {"_id": 0})
+        ]})
         results = list(query)
         
         if results == []:

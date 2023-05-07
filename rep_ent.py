@@ -98,9 +98,9 @@ def addDetailsToReceipt(data, fp, txid):
 @app.route('/getReceipts', methods=['POST'])
 def getReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    receipts = dbManager.getReceiptsFromDB(request.json, True)
+    # receipts = dbManager.getReceiptsFromDB(request.json, True)
     #TODO: pass a request for the given id to the network and get the receipts from the network
-    return json.dumps(receipts)
+    return json.dumps(request.json)
 
 @app.route('/retrReceipts', methods=['POST'])
 def retrReceipt():
