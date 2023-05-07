@@ -79,13 +79,16 @@ app.post("/shareReceipt", (req, res) => {
     }
 });
 
-app.get("/receipts", (req,res) => {
-    let receipts = []
+app.post("/getReceipts", async (req,res) => {
     try {
-        let getRcptMsg = createGetMsg(TTL, {"ReqParams": req.body})
-        connManm.handleMessage(getRcptMsg, null);
-        res.status()
-
+        let getRcptMsg = createGetMsg(TTL, req.body)
+        found = await connMan.handleMessage(getRcptMsg, null);
+        console.log(found)
+        res.status(200);
+        res.send({"receipts": found});
+    } catch {
+        res.status(500);
+        res.send();
     }
     // TODO: add local receipts to receipts array
 
