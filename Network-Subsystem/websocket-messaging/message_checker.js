@@ -9,8 +9,6 @@ const { json } = require('body-parser');
 const checkRcpt = require('../check_receipt')
 
 function checkMessage(jsonObj){
-    console.log("CHECKING")
-    console.log(jsonObj)
     // an error is thrown if it tries to parse something that is not a json object. Return false
     // if it is not a json object
     try{
@@ -21,13 +19,10 @@ function checkMessage(jsonObj){
             if (!checkHeader(header)){return false;}
             switch (header["MsgType"]) {
                 case "ShareReceipt":
-                    console.log("SHARE")
                     return checkShareRcptMsg(body)
                 case "RequestReceipt":
-                    console.log("REQUEST")
                     return checkReqRcptMsg(body);
                 case "RequestResponse":
-                    console.log("RESPONSE")
                     return checkReqRcptRes(body);
                 default:
                     return false;

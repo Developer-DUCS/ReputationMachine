@@ -151,8 +151,6 @@ class ConnectionManager {
                         Receipts: found
                     }
                 }
-                console.log(resMessage)
-
                 this.sendAll(resMessage);
             }
         })

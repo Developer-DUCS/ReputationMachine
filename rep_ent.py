@@ -205,7 +205,8 @@ def check_pending_receipts():
             receipt.pop("status")
 
             url = NETWORK_URL +"/shareReceipt"
-            res = requests.post(url, data = receipt)
+            res = requests.post(url, json = {"receipt": receipt})
+            print(receipt)
             print(res)
             print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
