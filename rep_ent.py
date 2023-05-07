@@ -85,8 +85,11 @@ def addDetailsToReceipt(data, fp, txid):
 def getReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
     
+    url = NETWORK_URL +"/getReceipts"
+    res = requests.post(url, json = request.json)
+    print(res.json())
     #TODO: pass a request for the given id to the network and get the receipts from the network
-    return json.dumps(request.json)
+    return json.dumps(res.json())
 
 @app.route('/retrReceipts', methods=['POST'])
 def retrReceipt():
@@ -100,12 +103,11 @@ def embedStatus():
     status = dbManager.getStatus(request.json)
     return status
 
-@app.route('/updateReceipts', methods=['POST'])
-def updateReceipts():
-    print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    dbManager.updateReceipts(request.json)
-    #TODO: propagate receipts through network
-    return "Updated Receipts"
+# @app.route('/updateReceipts', methods=['POST'])
+# def updateReceipts():
+#     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
+#     dbManager.updateReceipts(request.json)
+#     return "Updated Receipts"
 
 #======================================
   # Blockchain Functions
@@ -206,8 +208,6 @@ def check_pending_receipts():
 
             url = NETWORK_URL +"/shareReceipt"
             res = requests.post(url, json = {"receipt": receipt})
-            print(receipt)
-            print(res)
             print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
 def _sigint_handler_(signum, frame):

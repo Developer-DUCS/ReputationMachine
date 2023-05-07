@@ -79,12 +79,14 @@ app.post("/shareReceipt", (req, res) => {
     }
 });
 
-app.post("/getReceipts", async (req,res) => {
+app.post("/getReceipts", (req,res) => {
     try {
         let getRcptMsg = createGetMsg(TTL, req.body)
-        found = await connMan.handleMessage(getRcptMsg, null);
-        res.status(200);
-        res.send({"receipts": found});
+        connMan.handleMessage(getRcptMsg, null).then((found => {
+            res.status(200);
+            res.send({"receipts": found});
+        }));
+        
     } catch {
         res.status(500);
         res.send();
