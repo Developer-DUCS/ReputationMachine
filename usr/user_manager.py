@@ -4,6 +4,8 @@
 #Date: 2/12/23
 #Description: This is the user-manager
 
+#© Drury University 2023
+
 import uuid
 from user import user
 import os.path
