@@ -84,7 +84,7 @@ def addDetailsToReceipt(data, fp, txid):
 @app.route('/getReceipts', methods=['POST'])
 def getReceipt():
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    # receipts = dbManager.getReceiptsFromDB(request.json, True)
+    
     #TODO: pass a request for the given id to the network and get the receipts from the network
     return json.dumps(request.json)
 
@@ -203,8 +203,10 @@ def check_pending_receipts():
             confirmed = receipt
             dbManager.updateReceipts(confirmed)
             receipt.pop("status")
-            #TODO: propagate receipts through network
-            #await network api call 
+
+            url = NETWORK_URL +"/shareReceipt"
+            res = requests.post(url, data = receipt)
+            print(res)
             print("removing pending status from receipt " + str(receipt["_id"]) + " from the database.")
 
 def _sigint_handler_(signum, frame):
