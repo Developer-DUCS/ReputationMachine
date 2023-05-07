@@ -3,6 +3,7 @@ File Name: database_manager.py
 Author: Brandon Alvarez
 Date: 3/11/23
 Description: The database manager for the mongoDB database that store all created and requested receipts
+© Drury University 2023
 """
 
 # when implementing database_manager, make sure to import pymongo and create the following variables:

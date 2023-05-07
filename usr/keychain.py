@@ -4,6 +4,8 @@
 #Date: 2/26/23
 #Description: This is the user's cryptographic keychain
 
+#© Drury University 2023
+
 import uuid
 import os.path
 import json

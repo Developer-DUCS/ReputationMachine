@@ -3,7 +3,7 @@
 #Author: Jon Sigman
 #Date: 1/21/23
 #Description: This is the control sub-module for the reputable entity.
-# txid: b1be038b5b0c095c927857cde9817805692866e4ba7a183bb843602dafce4009
+#© Drury University 2023
 
 import os
 import sys
