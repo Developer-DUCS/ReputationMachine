@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { type } = require('os');
 const app = express();
 
 const CTRL_PORT = 3030;
@@ -90,7 +91,7 @@ function verifyReceipt(receipt) {
 function validHash(hashObject) {
     let sha256Pattern = /^[0-9a-fA-F]{64}$/;
 
-    if(typeof hashObject.hash == 'string' && sha256Pattern.test(hashObject.hash)) {
+    if(typeof hashObject == 'string' && sha256Pattern.test(hashObject)) {
         return true;
     }
     return false
@@ -163,7 +164,7 @@ app.get('/getReceipts/:id', async (req, res) => {
 });
 
 app.get('/embedStatus', async (req, res) => { 
-    if(validHash(req.body) != true) {
+    if(validHash(req.body['_id']) != true) {
         res.send(`${JSON.stringify(req.body)} - Invalid hash!`)
     }
     else {
