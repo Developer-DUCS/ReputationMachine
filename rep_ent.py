@@ -38,8 +38,7 @@ NETWORK_URL = "http://127.0.0.1:8080"
 
 @app.route('/verifyReceipt', methods=['POST'])
 def verifyReceipt():
-    check = dbManager.getPending()
-    # check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
+    check = verify_receipt(blockchain, request.json['txid'], request.json['fingerprint'])
     return str(check)
 
 @app.route('/saveReceipt', methods=['POST'])
