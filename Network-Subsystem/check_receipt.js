@@ -12,12 +12,12 @@ const { type } = require("os");
 const validClaimTypes = ["Creation","Modification","Deletion"]
 const validCategoryTypes = ["Review","Rating"]
 
-// this function is written by chatGPT
+// parts of this function is written by chatGPT
 function checkJsonFormat(jsonObj) {
     // check if json object has "source", "target" and "claim" properties
     if (jsonObj.hasOwnProperty("source") && jsonObj.hasOwnProperty("target") && jsonObj.hasOwnProperty("claim")) {
         // check if "source" and "target" are strings, and "claim" is a valid claim
-        if (typeof jsonObj.source === "string" && typeof jsonObj.target === "string" && checkClaim(jsonObj.claim)) {
+        if (typeof jsonObj.source === "string" && typeof jsonObj.target === "string" && typeof jsonObj._id === "string" && typeof jsonObj.fingerprint === "string" && checkClaim(jsonObj.claim)) {//check if _id and fingerprint are present and are strings
             return true;
         }
     }

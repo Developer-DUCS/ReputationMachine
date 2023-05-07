@@ -22,6 +22,7 @@ import json
 import queue
 from getpass import getpass
 from getpass import getuser
+import requests
 import time
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -29,6 +30,7 @@ from Crypto.Hash import SHA256
 
 app = Flask('3ap')
 scheduler = BackgroundScheduler()
+NETWORK_URL = "http://127.0.0.1:8080"
 
 #======================================
   # 3AP Routes
@@ -42,8 +44,14 @@ def verifyReceipt():
 
 @app.route('/saveReceipt', methods=['POST'])
 def saveReceipt():
+    rcpt = request.json
     print('Request coming from: ' + request.environ['REMOTE_ADDR'] + '\n')
-    
+    networkReqBody = {
+        "ttl": 5,
+        "receipt" : rcpt
+    }
+    networkRes = requests.post(NETWORK_URL + "/saveReceipt", json = networkReqBody)
+    print(networkRes)
     dbManager.addReceiptsToDB(request.json)
     
     return json_util.dumps(request.json)
