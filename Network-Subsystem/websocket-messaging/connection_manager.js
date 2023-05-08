@@ -122,7 +122,7 @@ class ConnectionManager {
     }
 
     async requestReceipt(jsonMessage, reqParams, msgSrc) {
-        return await this.requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc).then(result => {
+        return this.requestReceiptCoreFunction(jsonMessage, reqParams, msgSrc).then(result => {
             return result.found;
         });
     }
@@ -140,26 +140,24 @@ class ConnectionManager {
             newReceipts.forEach((item) => {
                 found.push(item);
             });
-        });
-        
-        // send request response
-        if (found.length > 0){
-            let resMessage = {
-                Header: {
-                    "MsgType": "RequestResponse",
-                    "TTL": 10,
-                    "MsgID": uuidv4()
-                },
-                Body: {
-                    ReqID: currReqId,
-                    Receipts: found
+
+            // send request response
+            if (found.length > 0){
+                let resMessage = {
+                    Header: {
+                        "MsgType": "RequestResponse",
+                        "TTL": 10,
+                        "MsgID": uuidv4()
+                    },
+                    Body: {
+                        ReqID: currReqId,
+                        Receipts: found
+                    }
                 }
+                this.pendingReqs.push({"ID": currReqId, "found": found})
+                this.sendAll(resMessage);
             }
-            this.sendAll(resMessage);
-        }
-
-        this.pendingReqs.push({"ID": currReqId, "found": found})
-
+        });
 
         return new Promise(resolve => {
             setTimeout(() => {
@@ -242,14 +240,13 @@ class ConnectionManager {
     reqResponse(jsonMessage, msgSrc){
         let msgID = jsonMessage["Body"]["ReqID"];
         let newReceipts = jsonMessage["Body"]["Receipts"];
-
-        let req = this.pendingReqs.find(rcpt => rcpt.ID === msgID)
-        if (req){
+        let req = this.pendingReqs.find(rcpt => rcpt.ID == msgID)
+        if (req != undefined){
             newReceipts.forEach((rcpt) => {
                 req.found.push(rcpt);
             })
             //remove duplicate receipts
-            req.found = req.found = (obj) => !Object.values(obj).come((val) => val === _id)
+            req.found = req.found.filter((v,i,a)=>a.findIndex(v2=>['_id'].every(k=>v2[k] ===v[k]))===i)
         }
         else {
             this.sendAllExcept(jsonMessage, msgSrc);

@@ -5,7 +5,7 @@
 
 const {v4: uuidv4} = require('uuid');
 
-function createShareReceiptMessage(TTL, reqParams) {
+function createShareResMessage(TTL, reqParams) {
     let message = {
         "Header": {
             "MsgType": "RequestReceipt",
@@ -19,4 +19,4 @@ function createShareReceiptMessage(TTL, reqParams) {
     return message;
 }
 
-module.exports = createShareReceiptMessage;
+module.exports = createShareResMessage;
