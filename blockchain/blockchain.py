@@ -36,7 +36,7 @@ class blockchain:
         print("===============================")
         
     def embed_fingerprint(self, fp):
-        tx_hash = self.my_wallet.send([('n15D7cyxEY5gp738g3DpzYPbHF6ZFsGxRG', self.tx_amnt, 'usd')],message=fp)
+        tx_hash = self.my_wallet.send([('muTp6WcLLmqG888rxKN6ZAe9mZzVPvwhbp', self.tx_amnt, 'usd')],message=fp)
         return tx_hash
         
     def get_tx(self, txid):
