@@ -13,11 +13,9 @@ Available Routes:
 Expects a request body in JSON of a receipt in the following format:
 ```
 {
-	"source": {
-		"id": valid public key
+	"source": valid public key
 	}
-	"target": {
-		"id": valid public key
+	"target": valid public key
 	}
 	"claim": {
 		"id": valid uuid4,
@@ -36,9 +34,7 @@ Expects a request body in JSON of the source or a target in the following format
 
 ```
 {
-	"source" or "target": {
-		"id": valid public key
-	}
+	"source" or "target": valid public key
 }
 ```
 
