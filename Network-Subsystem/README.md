@@ -2,9 +2,9 @@
 
 #### Designed and implemented by Julian Fisher
 
-The Network Subsystem is reponsible for handling websocket communication between multiple nodes. It also serves a standard HTTP api to handle communication between other systems of the Reputation Machine. Starting the server is a straightforward process. Simply clone this repo, and run `node server.js path/to/config.ini`. When starting the server you may, but do not have to, supply the path to a config file. If no config file path is specified, the default config file located at `./ReputationMachine/Network-Subsystem/config.ini` is used.
+The Network Subsystem is responsible for handling websocket communication between multiple nodes. It also serves a standard HTTP api to handle communication between other systems of the Reputation Machine. Starting the server is a straightforward process. Simply clone this repo, and run `node server.js path/to/config.ini`. When starting the server you may, but do not have to, supply the path to a config file. If no config file path is specified, the default config file located at `./ReputationMachine/Network-Subsystem/config.ini` is used.
 
-A WebSocket server can only accept incoming connection requests. However, the reputation machine needs to be able to accept incoming requests and spawn outgoing request. Because of this, the network subsystem has two main components: the client manager (client_manager.js), and the WebSocket server (socker_server.js). The client manager holds a list of WebSocket clients (socket_client.js) and handles any operations that need to apply to alll clients. The WebSocket server listens for incoming requests. Both WebSocket clients and the WebSocket server use a common connection manager (connection_manager.js) to create, process, and respond to WebSocket messages. Because of this, a common WebSocket Messaging protocol can be used across all WebSocket clients and servers.
+A WebSocket server can only accept incoming connection requests. However, the reputation machine needs to be able to accept incoming requests and spawn outgoing requests. Because of this, the network subsystem has two main components: the client manager (client_manager.js), and the WebSocket server (socker_server.js). The client manager holds a list of WebSocket clients (socket_client.js) and handles any operations that need to apply to all clients. The WebSocket server listens for incoming requests. Both WebSocket clients and the WebSocket server use a common connection manager (connection_manager.js) to create, process, and respond to WebSocket messages. Because of this, a common WebSocket Messaging protocol can be used across all WebSocket clients and servers.
 
 ## Config File Structure
 
@@ -182,7 +182,7 @@ When the server is running, you have the ability to send commands to the server 
 ### CLOSE
 
 **Syntax**: close [client|server] *URL*  
-**Description**: Manually close a connection to a node you are connected. You may specify if this node is the client or server role in the WebSocket connection. However, that is optional. If neither client nor server is specified, any connection with the givern URL will be closed.
+**Description**: Manually close a connection to a node you are connected to. You may specify if this node is the client or server role in the WebSocket connection. However, that is optional. If neither client nor server is specified, any connection with the given URL will be closed.
 
 ### SHOW
 

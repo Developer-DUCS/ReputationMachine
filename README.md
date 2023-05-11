@@ -6,7 +6,7 @@ The ReputationMachine project is a capstone project at Drury University (2022-20
 
 As part of this project, we submitted a poster to the Consortium for Computer Science in Colleges where we won second place. This poster gives a good overview of our project, and how it works.
 
-![Building Better Reputation Systems: Using decentralized systems to trustlessly manage reputation](./images/Reputation-Machine-Poster.png)
+![Building Better Reputation Systems: Using decentralized systems to trustlessly manage reputation](./images/Reputation-Machine-CCSC-Poster.jpg)
 
 ## Starting the Reputation Machine
 
