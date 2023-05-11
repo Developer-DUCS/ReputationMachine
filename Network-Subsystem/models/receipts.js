@@ -1,3 +1,4 @@
+// © Drury University 2023
 const mongoose = require('mongoose');
 
 const receipt = new mongoose.Schema(
