@@ -3,7 +3,8 @@
 // Date: 12/9/2022
 // Description: Define the commands that can be sent to the server while it is running. 
 // Myst provide a ClientManager web socket server to properly process commands.
- 
+// © Drury University 2023
+
 const os = require("os");
 const { send } = require("process");
 const createClient = require('./websocket-messaging/socket_client');

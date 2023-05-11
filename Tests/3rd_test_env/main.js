@@ -1,3 +1,4 @@
+// © Drury University 2023
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 

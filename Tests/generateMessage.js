@@ -2,6 +2,7 @@
 // Author: Julian Fisher
 // Date: 02/24/2023
 // Description: Generate messages used to test the network subsystem
+// © Drury University 2023
 
 const {spawn} = require('child_process');
 

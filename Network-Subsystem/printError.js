@@ -2,6 +2,7 @@
 // Author: Julian Fisher
 // Date: 1/21/2023
 // Description: Print error messages to the console
+// © Drury University 2023
 
 // print an error message to the console
 function printErrorMessage(message){

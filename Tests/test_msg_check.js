@@ -3,6 +3,7 @@
 // Date: 1/21/2023
 // Description: Test the message handler message checker by passing it pre generated messages
 // and checking the response
+// © Drury University 2023
 
 const checker = require('../ReputableEntity/websocket-messaging/message_checker')
 // Example of a properly formatted SendReceipt message

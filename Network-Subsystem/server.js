@@ -2,6 +2,7 @@
 // Author: Julian Fisher
 // Date: 12/9/2022
 // Description: Initialize the server to handle sending and recieving websocket messages
+// © Drury University 2023
 
 const ini = require('ini');
 const fs = require('fs');

@@ -1,3 +1,5 @@
+// © Drury University 2023
+
 const crypto = require("crypto");
 const fs = require("fs")
 const getRandomValues = require('get-random-values')

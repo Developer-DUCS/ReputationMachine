@@ -3,6 +3,7 @@
 // Date: 3/5/2023
 // Description: Define a function that will return the number of peers for a socket
 // server and a client manager
+// © Drury University 2023
 
 function getNumPeers(sockServer, clientManager, source="all") {
     let clientList = []

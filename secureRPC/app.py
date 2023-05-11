@@ -8,6 +8,7 @@
 # /getrawtransaction    get      rpc call getrawtransaction     200 ()
 #                                with verb 2
 #                                                               404 ()
+# © Drury University 2023
 
 from flask import flask, render_template
 import subprocess

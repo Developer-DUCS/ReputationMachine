@@ -1,3 +1,5 @@
+# © Drury University 2023
+
 import json
 import uuid
 import random

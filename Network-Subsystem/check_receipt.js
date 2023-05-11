@@ -3,6 +3,7 @@
 // Date: 1/25/2023
 // Description: Check a json object to be sure that it is a properly formatted
 // reputation receipt.
+// © Drury University 2023
 
 // some of this code is AI generated
 // ~ 11 lines

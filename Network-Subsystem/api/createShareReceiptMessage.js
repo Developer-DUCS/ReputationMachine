@@ -2,6 +2,7 @@
 // Author: Julian Fisher
 // Date: 3/7/2023
 // Description: Define a function that will create a ShareReceipt message 
+// © Drury University 2023
 
 const {v4: uuidv4} = require('uuid');
 

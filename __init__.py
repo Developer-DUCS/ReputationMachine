@@ -3,6 +3,7 @@
 #Author: Jon Sigman
 #Date: 1/21/23
 #Description: Define the module
+# © Drury University 2023
 
 import blockchain from blockchain
 import user from user

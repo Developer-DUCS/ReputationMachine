@@ -1,3 +1,5 @@
+//  © Drury University 2023
+
 const dbMan = require("../db_manager")
 
 db = new dbMan("test-db");

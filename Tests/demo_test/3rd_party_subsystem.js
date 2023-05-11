@@ -1,3 +1,5 @@
+// © Drury University 2023
+
 const generate = require("./receipt_demo");
 
 function verify_receipt(receipt) {

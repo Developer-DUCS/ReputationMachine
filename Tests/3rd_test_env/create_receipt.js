@@ -1,3 +1,4 @@
+// © Drury University 2023
 window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('autofill_review').addEventListener('click', () => {

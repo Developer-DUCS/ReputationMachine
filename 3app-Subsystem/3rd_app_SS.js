@@ -1,3 +1,4 @@
+// © Drury University 2023
 const express = require('express');
 const bodyParser = require('body-parser');
 const { type } = require('os');
