@@ -19,3 +19,80 @@ Starting the Reputation Machine requires running several process. The Reputation
 5. Start the network subsystem by running `node ./Network-Subsystem/server.js`
 
 Each of these subsystems are responsible for some of the functionality of the Reputation Machine. Several of these subsystems communicate using http requests to localhost. Each of these subsystems are discuessed in a seperate readme file in the relevant directory.
+
+## API
+
+Prior embedding, Receipt Structure 1 (RS1):
+
+```
+{
+  "source": ECDSA, P-256 Public Key,
+  "target": ECDSA, P-256 Public Key,
+  "claim": {
+    "id": uuid4,
+    "type": string containing Creation, Deletion, or Modification,
+    "category": string containing Review or Rating,
+    "content": 1-5 if rating, sring if review
+  }
+}
+```
+
+Post embedding, Receipt Structure 2 (RS2):
+
+```
+{
+  "_id": SHA-256 Hash,
+  "source": ECDSA, P-256 Public Key,
+  "target": ECDSA, P-256 Public Key,
+  "claim": {
+    "id": uuid4,
+    "type": string containing Creation, Deletion, or Modification,
+    "category": string containing Review or Rating,
+    "content": 1-5 if rating, sring if review
+  },
+  "txid": valid blockchain transaction id,
+  "fingerprint": signature of receipt using private key
+}
+```
+
+### /verifyReceipt
+
+Used by the network subsystem to verify a receipt received when requesting a receipt from network peers, expects RS2 format and returns either "True" or "False" depending on the receipt's validity.
+
+### /saveReceipt
+
+Used by the network subsytem to save a valid RS2 formatted receipt when received from network peers.
+
+### /createReceipt
+
+Used by the 3rd party app subsystem to create receipts. Expects a valid RS1 formatted and appends the "_id" field, generates the fingerprint and embeds the fingerprint into the blockchain, and finally adds the resulting txid to the receipt. Following the successful execution of all these operations, the receipt is added to the mongoDB database with a pending status until the scheduled task executes and returns six confirmations of the fingerprint in the blockchain, after which the pending status is removed.
+
+### /getReceipts
+
+Used by the 3rd party app subsystem to request receipts from or about a specific participant in the network. Expects a valid JSON source or target object and returns all receipts found from or about that entity.
+
+```
+{
+  "source": ECDSA, P-256 Public Key
+}
+
+OR
+
+{
+  "target": ECDSA, P-256 Public Key
+}
+```
+
+### /retrReceipts
+
+Used by the network subsystem to retrieve receipts from their own mongoDB database. Uses the same structure as the /getReceipts route.
+
+### /embedStatus
+
+Used by the 3rd party app subsystem to query the database to see if a receipt has been successfully embedded into the blockchain, expects a JSON object containing a valid "_id" field.
+
+```
+{
+  "_id": SHA-256 Hash
+}
+```
