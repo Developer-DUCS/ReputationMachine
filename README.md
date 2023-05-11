@@ -12,9 +12,10 @@ As part of this project, we submitted a poster to the Consortium for Computer Sc
 
 Starting the Reputation Machine requires running several process. The Reputation Machine consists of several sub systems that all must be running. The following need to be running to have a node of the reputation machine function properly.
 
-1. Run mongodb - Run mongodb on the local machine on the default port of 27017.
-2. Start rep_ent.py by running `python3 rep_ent.py -s`
-3. Start the third party app subsytem by running `node ./3app-Subsystem/3rd_app_SS.js`
-4. Start the network subsystem by running `node ./Network-Subsystem/server.js`
+1. Install Python dependencies via `pip3 install -r requirements.txt`
+2. Run mongodb - Run mongodb on the local machine on the default port of 27017.
+3. Start rep_ent.py by running `python3 rep_ent.py -s`
+4. Start the third party app subsytem by running `node ./3app-Subsystem/3rd_app_SS.js`
+5. Start the network subsystem by running `node ./Network-Subsystem/server.js`
 
 Each of these subsystems are responsible for some of the functionality of the Reputation Machine. Several of these subsystems communicate using http requests to localhost. Each of these subsystems are discuessed in a seperate readme file in the relevant directory.
