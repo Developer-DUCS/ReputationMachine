@@ -2,6 +2,7 @@
 // Author: Julian Fisher
 // Date: 12/9/2022
 // Description: Create a new websocket client and return the client
+// © Drury University 2023
 
 const WebSocket = require('ws').WebSocket;
 const printErrorMessage = require('../printError')

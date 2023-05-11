@@ -5,6 +5,7 @@
 // to handle message as they are passed through the network. As well as creating a websocket
 // server to listen for incoming connections, and a client manger to make outbound websocket
 // connection.
+// © Drury University 2023
 //
 // METHODS:
 //  handle(jsonMessage) - Process the given message

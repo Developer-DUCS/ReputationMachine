@@ -3,6 +3,7 @@
 // Date: 1/21/2023
 // Description: This file exports the checkMessage function that will check a json object to ensure
 // that it is a valid message sent from peering reputation machine servers
+// © Drury University 2023
 
 const acceptableRequestReceiptCriteria = ["TXID","Src","Trgt","RcptType","TimeFrame"]
 const { json } = require('body-parser');

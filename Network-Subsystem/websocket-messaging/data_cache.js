@@ -1,6 +1,7 @@
 // File: data_cache.js
 // Author: chatGPT, assembled by Julian Fisher
 // Date: 1/24/2023
+// © Drury University 2023
 
 // EVERYTHING BELOW THIS LINE WAS GENERATE USING CHATGPT
 

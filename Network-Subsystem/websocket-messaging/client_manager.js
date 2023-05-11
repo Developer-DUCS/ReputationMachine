@@ -4,6 +4,8 @@
 // Description: 
 // This file defines a clientManager class that is used to create and track
 // websocket client connections to remote servers
+// © Drury University 2023
+//
 // METHODS:
 // addClient(url) - Connect to a WebSocket server and add the client to the 
 //    list of client connections

@@ -3,6 +3,7 @@
 // Date: 12/9/2022
 // Description: Create and return a new WebSocket server that listens on the given port
 // and passes all messages to connectionManager
+// © Drury University 2023
 
 const { Server } = require('ws');
 
