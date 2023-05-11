@@ -43,7 +43,7 @@ const createShareMsg = require('./api/createShareReceiptMessage');
 const createGetMsg = require('./api/createGetReceiptMessage')
 
 // define API routes
-app.get("/getNumPeers", (req, res) => {
+app.get("/numPeers", (req, res) => {
     try {
         res.json(getNumPeers(connMan.sockServ,connMan.clientManager));
         res.status(200);
@@ -55,7 +55,7 @@ app.get("/getNumPeers", (req, res) => {
     }
 });
 
-app.get("/getPeers", (req, res) => {
+app.get("/peers", (req, res) => {
     try {
         res.json(getPeers(connMan.sockServ,connMan.clientManager));
         res.status(200);
